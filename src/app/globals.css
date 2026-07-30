@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  /* Ledger palette — warm paper + ink, not another dark-mode SaaS dashboard */
+  --ink: #1c2b39;
+  --ink-soft: #4a5a68;
+  --parchment: #f6f1e7;
+  --parchment-dim: #efe6d3;
+  --rule: #ded0ac;
+  --sage: #0e9d63;
+  --sage-soft: #d2f5e2;
+  --rust: #e6432a;
+  --rust-soft: #fce0d9;
+  --plum: #8a2fc4;
+  --plum-soft: #f1e0f9;
+  /* Gilt — the antique tone stays for small-scale refined use (logo,
+     flourish rule). Gilt-bright is the loud version — CTAs, bold
+     blocks, anywhere this needs to compete with color and motion
+     rather than read as a quiet accent. */
+  --gilt: #b8892b;
+  --gilt-soft: #f3e9d2;
+  --gilt-bright: #f5a300;
+  /* A single deep tone, reserved for text-on-dark moments. */
+  --ink-deep: #10202e;
+
+  --radius-card: 5px;
+  --shadow-card: 0 1px 2px rgba(28, 43, 57, 0.05), 0 6px 20px rgba(28, 43, 57, 0.06);
+
+  --background: var(--parchment);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-parchment: var(--parchment);
+  --color-parchment-dim: var(--parchment-dim);
+  --color-rule: var(--rule);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-rust: var(--rust);
+  --color-rust-soft: var(--rust-soft);
+  --color-plum: var(--plum);
+  --color-plum-soft: var(--plum-soft);
+  --color-gilt: var(--gilt);
+  --color-gilt-soft: var(--gilt-soft);
+  --color-gilt-bright: var(--gilt-bright);
+  --color-ink-deep: var(--ink-deep);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-public-sans);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-public-sans), sans-serif;
+}
+
+/* Ledger rule — a hairline like a ruled page, used to separate rows
+   instead of boxed/shadowed cards everywhere */
+.ledger-rule {
+  border-top: 1px solid var(--rule);
+}
+
+/* Gilt flourish — a thin double-rule, used once per page at most, as
+   the one ornamental signature moment (under a hero headline, above
+   a section that deserves ceremony). Not a generic divider. */
+.gilt-flourish {
+  height: 5px;
+  border-top: 2px solid var(--gilt);
+  border-bottom: 1px solid var(--gilt);
+  opacity: 0.55;
+  width: 64px;
+}
+
+/* The signature surface: a "ledger page" card. Soft elevation and a
+   whisper of radius (never a hard broadsheet zero-radius rectangle,
+   never a generic rounded-2xl SaaS card either). */
+.ledger-card {
+  background: #fffdf8;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Soft, consistent rounding baseline for every form control. Lower
+   specificity than any Tailwind rounded-* utility, so buttons that
+   explicitly opt into rounded-full (primary CTAs) still win — this
+   just stops plain inputs/buttons from defaulting to hard corners. */
+input,
+select,
+textarea,
+button {
+  border-radius: 3px;
+}
+
+.tabular {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+

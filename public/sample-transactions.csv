@@ -1,0 +1,10 @@
+date,amount,type,category,note
+2026-07-01,3200.00,income,Salary,July paycheck
+2026-07-02,45.50,expense,Groceries,Weekly shop
+2026-07-03,850.00,expense,Rent/Mortgage,July rent
+2026-07-05,-12.99,,Dining Out,Coffee and lunch
+2026-07-08,60.00,expense,Transport,Fuel
+2026-07-10,300.00,income,Freelance,Side project payment
+2026-07-15,150.00,expense,Healthcare,Dentist
+2026-07-18,99.99,expense,Entertainment,Concert ticket
+2026-07-22,40.00,expense,Utilities,Electricity

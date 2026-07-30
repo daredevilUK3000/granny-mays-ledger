@@ -1,0 +1,139 @@
+import Link from "next/link";
+import { Logo } from "@/components/Logo";
+import { Footer } from "@/components/Footer";
+import { HeroLedgerCard } from "@/components/HeroLedgerCard";
+import { HeroVideoBackground } from "@/components/HeroVideoBackground";
+import { Reveal } from "@/components/Reveal";
+
+const jobs = [
+  "Where did my money go this month?",
+  "How much do I need to save each month to hit a goal by a date?",
+  "What happens if I invest \u20ac300 a month?",
+  "What's the fastest way to clear this debt?",
+];
+
+const trustPoints = [
+  { label: "No bank connections", detail: "Your account details never leave your bank.", tone: "sage" as const },
+  { label: "No AI", detail: "Every number is arithmetic you could check by hand.", tone: "rust" as const },
+  { label: "No data sold", detail: "Nothing here is shared, rented, or sold to anyone.", tone: "plum" as const },
+];
+
+export default function LandingPage() {
+  return (
+    <main className="flex-1">
+      <header className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
+        <Logo size={26} />
+        <Link href="/login" className="text-sm text-ink-soft hover:text-ink transition-colors">
+          Sign in
+        </Link>
+      </header>
+
+      {/* Full-bleed video hero \u2014 the video itself stays fully visible;
+          only a small bottom-corner card carries the text, same
+          structure as the Monarch reference. */}
+      <section className="relative h-[92vh] min-h-[560px] overflow-hidden">
+        <HeroVideoBackground />
+
+        {/* Floating ledger card, upper right \u2014 hidden on small screens */}
+        <div className="hidden lg:block absolute top-28 right-10 z-10">
+          <HeroLedgerCard />
+        </div>
+
+        {/* Headline card, bottom left */}
+        <div className="absolute bottom-6 left-4 right-4 sm:left-8 sm:right-auto sm:max-w-lg z-10">
+          <div className="bg-parchment rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)] p-7 sm:p-9">
+            <p className="tabular text-xs tracking-[0.15em] text-gilt-bright uppercase mb-4 font-bold">
+              The old-fashioned way, digitized
+            </p>
+            <h1 className="font-display text-4xl sm:text-5xl leading-[1.02] text-ink mb-3">
+              Keep your own <em className="text-plum not-italic">ledger.</em>
+            </h1>
+            <p className="text-ink-soft text-sm sm:text-base leading-relaxed mb-6 max-w-md">
+              A budget tracker and goal planner for people who'd rather enter
+              their own numbers than link their bank account to a stranger's
+              server.
+            </p>
+            <Link
+              href="/login"
+              className="tabular inline-flex items-center rounded-full bg-gilt-bright px-7 py-3.5 text-base text-white font-medium hover:brightness-110 hover:scale-105 transition-all shadow-[0_8px_24px_rgba(245,163,0,0.45)]"
+            >
+              Start tracking &mdash; free
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Bold, colourful trust band */}
+      <section className="py-16 bg-gradient-to-r from-sage-soft via-plum-soft to-rust-soft">
+        <div className="mx-auto max-w-6xl px-6 grid sm:grid-cols-3 gap-8">
+          {trustPoints.map((t, i) => {
+            const toneMap = {
+              sage: "text-sage",
+              rust: "text-rust",
+              plum: "text-plum",
+            };
+            return (
+              <Reveal key={t.label} delay={i * 120}>
+                <div className="bg-white rounded-xl p-6 shadow-[0_8px_24px_rgba(16,32,46,0.1)] hover:-translate-y-1 transition-transform">
+                  <p className={`font-display text-2xl mb-2 ${toneMap[t.tone]}`}>{t.label}</p>
+                  <p className="text-sm text-ink-soft leading-relaxed">{t.detail}</p>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-6 py-24">
+        <Reveal>
+          <div className="ledger-rule pt-8">
+            <h2 className="font-display text-2xl text-ink mb-6">
+              What people actually want to know
+            </h2>
+            <ul className="space-y-0">
+              {jobs.map((job, i) => (
+                <li
+                  key={job}
+                  className="ledger-rule flex items-baseline gap-4 py-5 last:pb-0"
+                >
+                  <span
+                    className="tabular text-lg font-medium"
+                    style={{ color: [`var(--sage)`, `var(--rust)`, `var(--plum)`, `var(--gilt-bright)`][i % 4] }}
+                  >
+                    &bull;
+                  </span>
+                  <span className="text-ink text-lg">{job}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-6 pb-24">
+        <Reveal>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <div className="rounded-xl p-6 border-2 border-sage bg-sage-soft hover:-translate-y-1 transition-transform">
+              <h3 className="font-display text-xl text-ink mb-2">Free</h3>
+              <p className="text-ink-soft text-sm leading-relaxed">
+                Manual budget tracking, monthly category budgets, sinking
+                funds, a financial decisions journal, and up to 2 savings
+                goals with progress and on-track indicators.
+              </p>
+            </div>
+            <div className="rounded-xl p-6 border-2 border-plum bg-plum-soft hover:-translate-y-1 transition-transform">
+              <h3 className="font-display text-xl text-plum mb-2">Premium</h3>
+              <p className="text-ink-soft text-sm leading-relaxed">
+                Up to 5 goals, investment projections, debt payoff plans
+                (snowball or avalanche), net worth tracking with a Time to
+                Freedom projection, decision journal insights, and CSV import.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      <Footer />
+    </main>
+  );
+}
