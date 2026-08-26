@@ -1,18 +1,17 @@
+import Image from "next/image";
+
+const MARK_ASPECT = 300 / 368; // width / height of /public/logo-mark.png
+
 export function LogoMark({ size = 32 }: { size?: number }) {
   return (
-    <svg
-      width={size}
+    <Image
+      src="/logo-mark.png"
+      alt=""
+      width={Math.round(size * MARK_ASPECT)}
       height={size}
-      viewBox="0 0 64 64"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <rect width="64" height="64" rx="14" fill="#1c2b39" />
-      <rect x="14" y="19" width="36" height="3.5" rx="1.75" fill="#f6f1e7" />
-      <rect x="14" y="30.25" width="27" height="3.5" rx="1.75" fill="#f6f1e7" opacity="0.82" />
-      <rect x="14" y="41.5" width="18" height="3.5" rx="1.75" fill="#b8892b" />
-      <circle cx="47" cy="43.25" r="3.75" fill="#b8892b" />
-    </svg>
+      className="shrink-0"
+      priority
+    />
   );
 }
 
