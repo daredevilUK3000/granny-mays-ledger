@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { HeroLedgerCard } from "@/components/HeroLedgerCard";
 import { HeroVideoBackground } from "@/components/HeroVideoBackground";
 import { Reveal } from "@/components/Reveal";
+import { getCurrentUserEmail } from "@/lib/auth";
 
 const jobs = [
   "Where did my money go this month?",
@@ -18,14 +19,25 @@ const trustPoints = [
   { label: "No data sold", detail: "Nothing here is shared, rented, or sold to anyone.", tone: "plum" as const },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const email = await getCurrentUserEmail();
+
   return (
     <main className="flex-1">
       <header className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
         <Logo size={26} />
-        <Link href="/login" className="text-sm text-ink-soft hover:text-ink transition-colors">
-          Sign in
-        </Link>
+        {email ? (
+          <Link
+            href="/dashboard/overview"
+            className="text-sm text-ink-soft hover:text-ink transition-colors"
+          >
+            Dashboard
+          </Link>
+        ) : (
+          <Link href="/login" className="text-sm text-ink-soft hover:text-ink transition-colors">
+            Sign in
+          </Link>
+        )}
       </header>
 
       {/* Full-bleed video hero \u2014 the video itself stays fully visible;
