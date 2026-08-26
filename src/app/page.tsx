@@ -25,7 +25,7 @@ export default async function LandingPage() {
   return (
     <main className="flex-1">
       <header className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
-        <Logo size={26} />
+        <Logo size={65} wordmarkClassName="font-display text-3xl text-ink" />
         {email ? (
           <Link
             href="/dashboard/overview"
