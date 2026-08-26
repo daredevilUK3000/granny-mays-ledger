@@ -18,3 +18,17 @@ export async function requireUserId(): Promise<string> {
 
   return user.id;
 }
+
+/**
+ * Use where the UI needs to show which account is signed in
+ * (e.g. a "your profile" display). Returns null if not logged in
+ * rather than redirecting, since callers here are display-only.
+ */
+export async function getCurrentUserEmail(): Promise<string | null> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user?.email ?? null;
+}

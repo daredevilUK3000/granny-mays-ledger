@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUserId } from "@/lib/auth";
+import { requireUserId, getCurrentUserEmail } from "@/lib/auth";
 import { getProfile } from "@/lib/data/profile";
 import { signOut } from "@/lib/actions";
 import { Logo } from "@/components/Logo";
@@ -27,19 +27,27 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const userId = await requireUserId();
-  const profile = await getProfile(userId);
+  const [profile, email] = await Promise.all([
+    getProfile(userId),
+    getCurrentUserEmail(),
+  ]);
   const isPremium = profile.plan === "premium";
 
   return (
     <div className="flex-1 flex flex-col md:flex-row">
       <aside className="md:w-60 shrink-0 border-b md:border-b-0 md:border-r border-rule bg-parchment-dim/40 px-6 py-8">
-        <Link href="/dashboard/overview" className="block">
+        <Link href="/" className="block">
           <Logo size={26} wordmarkClassName="font-display text-base text-ink leading-tight" />
         </Link>
 
         <DashboardNav freeNav={freeNav} premiumNav={premiumNav} isPremium={isPremium} />
 
         <div className="mt-6 ledger-rule pt-6 space-y-1">
+          {email && (
+            <p className="text-xs text-ink-soft mb-2 truncate" title={email}>
+              Signed in as <span className="text-ink">{email}</span>
+            </p>
+          )}
           <Link
             href="/dashboard/settings"
             className="block text-sm py-1.5 text-ink-soft hover:text-ink transition-colors"

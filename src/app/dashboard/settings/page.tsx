@@ -1,4 +1,4 @@
-import { requireUserId } from "@/lib/auth";
+import { requireUserId, getCurrentUserEmail } from "@/lib/auth";
 import { getProfile } from "@/lib/data/profile";
 import { updateProfile } from "@/lib/actions";
 
@@ -6,12 +6,20 @@ const currencies = ["USD", "EUR", "GBP", "CAD", "AUD"];
 
 export default async function SettingsPage() {
   const userId = await requireUserId();
-  const profile = await getProfile(userId);
+  const [profile, email] = await Promise.all([
+    getProfile(userId),
+    getCurrentUserEmail(),
+  ]);
 
   return (
     <div>
       <h1 className="font-display text-3xl text-ink mb-2">Settings</h1>
       <div className="gilt-flourish mb-8" />
+
+      <div className="max-w-sm mb-10">
+        <p className="text-xs text-ink-soft uppercase tracking-wide mb-2">Your profile</p>
+        <p className="text-sm text-ink">{email}</p>
+      </div>
 
       <form action={updateProfile} className="max-w-sm space-y-4">
         <div>
