@@ -3,7 +3,6 @@ import { Logo } from "@/components/Logo";
 import { Footer } from "@/components/Footer";
 import { HeroLedgerCard } from "@/components/HeroLedgerCard";
 import { HeroVideoBackground } from "@/components/HeroVideoBackground";
-import { GrannyMoneyCornerVideo } from "@/components/GrannyMoneyCornerVideo";
 import { Reveal } from "@/components/Reveal";
 import GrannysMoneyCorner, { type GrannyLocalState } from "@/components/GrannysMoneyCorner";
 import { getCurrentUser } from "@/lib/auth";
@@ -120,9 +119,16 @@ export default async function LandingPage() {
           <Reveal>
             <div className="flex justify-center">
               <div className="ledger-card w-full max-w-sm lg:max-w-md aspect-square overflow-hidden p-3">
-                <div className="w-full h-full rounded-[3px] overflow-hidden">
-                  <GrannyMoneyCornerVideo />
-                </div>
+                <video
+                  className="w-full h-full rounded-[3px] object-cover"
+                  src="/granny-money-corner.mp4"
+                  poster="/granny-money-corner-poster.jpg"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-label="Granny May, weighing up a decision while writing in her ledger"
+                />
               </div>
             </div>
           </Reveal>
