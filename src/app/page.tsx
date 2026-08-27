@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Logo } from "@/components/Logo";
 import { Footer } from "@/components/Footer";
 import { HeroLedgerCard } from "@/components/HeroLedgerCard";
@@ -119,13 +118,18 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 grid lg:grid-cols-2 gap-12 items-center">
           <Reveal>
             <div className="flex justify-center">
-              <Image
-                src="/granny-money-corner.png"
-                alt="Granny May, puzzled, weighing up a decision while writing in her ledger"
-                width={700}
-                height={700}
-                className="w-full max-w-sm lg:max-w-md"
-              />
+              <div className="ledger-card w-full max-w-sm lg:max-w-md aspect-square overflow-hidden p-3">
+                <video
+                  className="w-full h-full rounded-[3px] object-cover"
+                  src="/granny-money-corner.mp4"
+                  poster="/granny-money-corner-poster.jpg"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-label="Granny May, puzzled, weighing up a decision while writing in her ledger"
+                />
+              </div>
             </div>
           </Reveal>
           <Reveal delay={120}>
