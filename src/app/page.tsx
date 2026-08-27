@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { HeroLedgerCard } from "@/components/HeroLedgerCard";
 import { HeroVideoBackground } from "@/components/HeroVideoBackground";
 import { Reveal } from "@/components/Reveal";
+import GrannysMoneyCorner from "@/components/GrannysMoneyCorner";
 import { getCurrentUserEmail } from "@/lib/auth";
 
 const jobs = [
@@ -95,6 +96,14 @@ export default async function LandingPage() {
           })}
         </div>
       </section>
+
+      {!email && (
+        <section className="mx-auto max-w-3xl px-6 pt-24">
+          <Reveal>
+            <GrannysMoneyCorner />
+          </Reveal>
+        </section>
+      )}
 
       <section className="mx-auto max-w-3xl px-6 py-24">
         <Reveal>

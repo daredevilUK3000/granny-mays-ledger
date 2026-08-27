@@ -739,6 +739,61 @@ export async function updateProfile(formData: FormData) {
 }
 
 // ---------------------------------------------------------------------
+// Granny's Money Corner — one-time anonymous score handoff
+// ---------------------------------------------------------------------
+export async function claimGrannyScore(payload: {
+  score: number;
+  streak: number;
+  lastPlayedDate: string | null;
+  stats: {
+    savingsDiscipline: number;
+    impulseControl: number;
+    debtManagement: number;
+    budgeting: number;
+  };
+}) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  // Idempotent: only ever claim once per user, so a stray extra call
+  // (or a tampered localStorage value) can't keep bumping the score.
+  const { data: existing, error: existingError } = await supabase
+    .from("granny_scores")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) return;
+
+  // This is client-supplied (localStorage) data — never trust it at
+  // face value, clamp everything to a sane range before writing.
+  const clamp = (n: unknown, min: number, max: number) => {
+    const num = Number(n);
+    if (!Number.isFinite(num)) return 0;
+    return Math.max(min, Math.min(max, Math.round(num)));
+  };
+  const lastPlayedDate =
+    typeof payload.lastPlayedDate === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(payload.lastPlayedDate)
+      ? payload.lastPlayedDate
+      : null;
+
+  const { error } = await supabase.from("granny_scores").insert({
+    user_id: userId,
+    score: clamp(payload.score, -1000, 100_000),
+    streak: clamp(payload.streak, 0, 3650),
+    last_played_date: lastPlayedDate,
+    savings_discipline: clamp(payload.stats?.savingsDiscipline, -1000, 1000),
+    impulse_control: clamp(payload.stats?.impulseControl, -1000, 1000),
+    debt_management: clamp(payload.stats?.debtManagement, -1000, 1000),
+    budgeting: clamp(payload.stats?.budgeting, -1000, 1000),
+  });
+
+  if (error) throw error;
+  revalidatePath("/dashboard/overview");
+}
+
+// ---------------------------------------------------------------------
 // Auth
 // ---------------------------------------------------------------------
 export async function signOut() {

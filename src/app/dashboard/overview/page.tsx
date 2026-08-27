@@ -4,6 +4,13 @@ import { getMonthSummary, currentMonth } from "@/lib/data/transactions";
 import { getCategories } from "@/lib/data/categories";
 import { getGoals } from "@/lib/data/goals";
 import { getProfile } from "@/lib/data/profile";
+import { getGrannyScore } from "@/lib/data/granny-score";
+
+// Character stats realistically land somewhere around -50..+100 after a
+// handful of days played anonymously — map that range onto a 0-100% bar.
+function statBarWidth(n: number) {
+  return Math.max(0, Math.min(100, ((n + 50) / 150) * 100));
+}
 
 function shiftMonth(month: string, delta: number): string {
   const [y, m] = month.split("-").map(Number);
@@ -24,11 +31,12 @@ export default async function OverviewPage({
   const { month: monthParam } = await searchParams;
   const month = monthParam ?? currentMonth();
 
-  const [summary, categories, profile, { goals }] = await Promise.all([
+  const [summary, categories, profile, { goals }, grannyScore] = await Promise.all([
     getMonthSummary(userId, month),
     getCategories(userId),
     getProfile(userId),
     getGoals(userId, false),
+    getGrannyScore(userId),
   ]);
 
   const categoryName = new Map(categories.map((c) => [c.id, c.name]));
@@ -122,6 +130,33 @@ export default async function OverviewPage({
           )}
         </section>
       </div>
+
+      {grannyScore && (
+        <div className="ledger-card p-5 mt-10 max-w-sm">
+          <p className="text-xs text-ink-soft uppercase tracking-wide">
+            From Granny&rsquo;s Money Corner
+          </p>
+          <p className="tabular text-2xl text-gilt-bright mt-1">{grannyScore.score}</p>
+          <div className="space-y-2 mt-4">
+            {[
+              { label: "Savings discipline", value: grannyScore.savings_discipline, tone: "bg-sage" },
+              { label: "Impulse control", value: grannyScore.impulse_control, tone: "bg-plum" },
+              { label: "Debt management", value: grannyScore.debt_management, tone: "bg-rust" },
+              { label: "Budgeting", value: grannyScore.budgeting, tone: "bg-gilt" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-ink-soft">{stat.label}</span>
+                  <span className="tabular text-xs text-ink-soft">{stat.value}</span>
+                </div>
+                <div className="h-1.5 bg-parchment-dim mt-1">
+                  <div className={`h-full ${stat.tone}`} style={{ width: `${statBarWidth(stat.value)}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

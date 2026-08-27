@@ -4,6 +4,7 @@ import { getProfile } from "@/lib/data/profile";
 import { signOut } from "@/lib/actions";
 import { Logo } from "@/components/Logo";
 import { DashboardNav } from "@/components/DashboardNav";
+import { GrannyScoreHandoff } from "@/components/GrannyScoreHandoff";
 
 const freeNav = [
   { href: "/dashboard/getting-started", label: "Getting started" },
@@ -35,6 +36,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex-1 flex flex-col md:flex-row">
+      <GrannyScoreHandoff />
       <aside className="md:w-60 shrink-0 border-b md:border-b-0 md:border-r border-rule bg-parchment-dim/40 px-6 py-8">
         <Link href="/" className="block">
           <Logo size={26} wordmarkClassName="font-display text-base text-ink leading-tight" />
