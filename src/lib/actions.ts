@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { GOAL_LIMIT } from "@/lib/data/goals";
 import { SINKING_FUND_LIMIT } from "@/lib/data/sinkingfunds";
 import { getProfile } from "@/lib/data/profile";
+import { getScenarioForDate } from "@/lib/granny-scenarios";
 
 // ---------------------------------------------------------------------
 // Categories
@@ -791,6 +792,82 @@ export async function claimGrannyScore(payload: {
 
   if (error) throw error;
   revalidatePath("/dashboard/overview");
+}
+
+/**
+ * Daily play for signed-in users, called from the landing-page widget.
+ * Unlike claimGrannyScore (a one-time anonymous handoff), this updates
+ * the same row on every valid play. The scenario and choice are looked
+ * up server-side from the id alone — the client never gets to supply
+ * score deltas directly, so there's nothing to tamper with beyond
+ * picking which of today's real choices to make.
+ */
+export async function playGrannyScenario(choiceId: string) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  const today = new Date();
+  const todayKey = today.toISOString().slice(0, 10);
+  const scenario = getScenarioForDate(today);
+  const choice = scenario.choices.find((c) => c.id === choiceId);
+  if (!choice) throw new Error("That choice doesn't exist for today's scenario.");
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("granny_scores")
+    .select("score, streak, last_played_date, savings_discipline, impulse_control, debt_management, budgeting")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+
+  if (existing?.last_played_date === todayKey) {
+    throw new Error("You've already played today's dilemma.");
+  }
+
+  const wasYesterday = (() => {
+    if (!existing?.last_played_date) return false;
+    const prev = new Date(existing.last_played_date);
+    const diffDays = Math.round((today.getTime() - prev.getTime()) / 86_400_000);
+    return diffDays === 1;
+  })();
+
+  const next = {
+    user_id: userId,
+    score: (existing?.score ?? 0) + scoreDeltaFromEffects(choice.effects),
+    streak: wasYesterday ? (existing?.streak ?? 0) + 1 : 1,
+    last_played_date: todayKey,
+    savings_discipline: (existing?.savings_discipline ?? 0) + choice.effects.savingsDiscipline,
+    impulse_control: (existing?.impulse_control ?? 0) + choice.effects.impulseControl,
+    debt_management: (existing?.debt_management ?? 0) + choice.effects.debtManagement,
+    budgeting: (existing?.budgeting ?? 0) + choice.effects.budgeting,
+  };
+
+  const { error } = await supabase.from("granny_scores").upsert(next, { onConflict: "user_id" });
+  if (error) throw error;
+
+  revalidatePath("/");
+  revalidatePath("/dashboard/overview");
+
+  return {
+    response: choice.response,
+    score: next.score,
+    streak: next.streak,
+    lastPlayedDate: next.last_played_date,
+    stats: {
+      savingsDiscipline: next.savings_discipline,
+      impulseControl: next.impulse_control,
+      debtManagement: next.debt_management,
+      budgeting: next.budgeting,
+    },
+  };
+}
+
+function scoreDeltaFromEffects(effects: {
+  savingsDiscipline: number;
+  impulseControl: number;
+  debtManagement: number;
+  budgeting: number;
+}): number {
+  return effects.savingsDiscipline + effects.impulseControl + effects.debtManagement + effects.budgeting;
 }
 
 // ---------------------------------------------------------------------

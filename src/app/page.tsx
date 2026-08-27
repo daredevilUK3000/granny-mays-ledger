@@ -5,8 +5,9 @@ import { Footer } from "@/components/Footer";
 import { HeroLedgerCard } from "@/components/HeroLedgerCard";
 import { HeroVideoBackground } from "@/components/HeroVideoBackground";
 import { Reveal } from "@/components/Reveal";
-import GrannysMoneyCorner from "@/components/GrannysMoneyCorner";
-import { getCurrentUserEmail } from "@/lib/auth";
+import GrannysMoneyCorner, { type GrannyLocalState } from "@/components/GrannysMoneyCorner";
+import { getCurrentUser } from "@/lib/auth";
+import { getGrannyScore } from "@/lib/data/granny-score";
 
 const jobs = [
   "Where did my money go this month?",
@@ -22,7 +23,23 @@ const trustPoints = [
 ];
 
 export default async function LandingPage() {
-  const email = await getCurrentUserEmail();
+  const user = await getCurrentUser();
+  const email = user?.email ?? null;
+
+  const grannyScore = user ? await getGrannyScore(user.id) : null;
+  const grannyInitialState: GrannyLocalState | null = grannyScore
+    ? {
+        score: grannyScore.score,
+        streak: grannyScore.streak,
+        lastPlayedDate: grannyScore.last_played_date,
+        stats: {
+          savingsDiscipline: grannyScore.savings_discipline,
+          impulseControl: grannyScore.impulse_control,
+          debtManagement: grannyScore.debt_management,
+          budgeting: grannyScore.budgeting,
+        },
+      }
+    : null;
 
   return (
     <main className="flex-1">
@@ -98,26 +115,24 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {!email && (
-        <section className="w-full bg-ink-deep py-20">
-          <div className="mx-auto max-w-6xl px-6 grid lg:grid-cols-2 gap-12 items-center">
-            <Reveal>
-              <div className="flex justify-center">
-                <Image
-                  src="/granny-money-corner.png"
-                  alt="Granny May, puzzled, weighing up a decision while writing in her ledger"
-                  width={700}
-                  height={700}
-                  className="w-full max-w-sm lg:max-w-md"
-                />
-              </div>
-            </Reveal>
-            <Reveal delay={120}>
-              <GrannysMoneyCorner />
-            </Reveal>
-          </div>
-        </section>
-      )}
+      <section className="w-full bg-ink-deep py-20">
+        <div className="mx-auto max-w-6xl px-6 grid lg:grid-cols-2 gap-12 items-center">
+          <Reveal>
+            <div className="flex justify-center">
+              <Image
+                src="/granny-money-corner.png"
+                alt="Granny May, puzzled, weighing up a decision while writing in her ledger"
+                width={700}
+                height={700}
+                className="w-full max-w-sm lg:max-w-md"
+              />
+            </div>
+          </Reveal>
+          <Reveal delay={120}>
+            <GrannysMoneyCorner signedIn={!!email} initialState={grannyInitialState} />
+          </Reveal>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-3xl px-6 py-24">
         <Reveal>

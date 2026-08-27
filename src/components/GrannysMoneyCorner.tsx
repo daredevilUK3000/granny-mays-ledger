@@ -1,27 +1,30 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import Link from "next/link";
 import {
   SCENARIOS,
   getScenarioForDate,
   type GrannyChoice,
   type GrannyScenario,
 } from "@/lib/granny-scenarios";
+import { playGrannyScenario } from "@/lib/actions";
 
 /**
- * Granny's Money Corner — anonymous-friendly landing page widget.
+ * Granny's Money Corner — the daily "What Would Granny Do?" widget.
  *
- * - No API calls: today's scenario is picked deterministically from a
- *   static pool (see lib/granny-scenarios.ts), so every visitor plays
- *   the same dilemma on a given day with zero server round-trip.
- * - Score + streak persist in localStorage for anonymous visitors.
- *   On signup, the dashboard reads GRANNY_STORAGE_KEY once and folds it
- *   into the new user's account (see GrannyScoreHandoff.tsx) — that's
- *   the bridge from "playing a game" to "using the real app," so the
- *   key name/shape here must stay in sync with that handoff.
- * - Logged-in users don't see this widget at all (the page that renders
- *   it hides it once signed in) — the daily game stays landing-page-only
- *   by design; it doesn't continue inside the dashboard.
+ * - No API calls to pick or score a scenario: today's dilemma is chosen
+ *   deterministically from a static pool (see lib/granny-scenarios.ts),
+ *   so every visitor plays the same one on a given day.
+ * - Anonymous visitors: score/streak/stats persist in localStorage. On
+ *   signup, GrannyScoreHandoff.tsx reads GRANNY_STORAGE_KEY once and
+ *   folds it into the new user's account, then clears it — that's the
+ *   one-time bridge from "playing a game" to "using the real app."
+ * - Signed-in visitors (signedIn=true): play goes through the
+ *   playGrannyScenario server action instead of localStorage, so the
+ *   same account row keeps updating every day, server-validated. The
+ *   parent page fetches the current DB state and passes it as
+ *   initialState.
  */
 
 export const GRANNY_STORAGE_KEY = "granny-money-corner:v1";
@@ -70,24 +73,56 @@ function scoreDelta(choice: GrannyChoice): number {
   return savingsDiscipline + impulseControl + debtManagement + budgeting;
 }
 
-export default function GrannysMoneyCorner() {
+export default function GrannysMoneyCorner({
+  signedIn = false,
+  initialState = null,
+}: {
+  signedIn?: boolean;
+  initialState?: GrannyLocalState | null;
+}) {
   const today = useMemo(() => new Date(), []);
   const scenario: GrannyScenario = useMemo(
     () => getScenarioForDate(today, SCENARIOS),
     [today],
   );
 
-  const [state, setState] = useState<GrannyLocalState | null>(null);
+  const [state, setState] = useState<GrannyLocalState | null>(
+    signedIn ? initialState ?? EMPTY_STATE : null,
+  );
   const [chosenId, setChosenId] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setState(loadState());
-  }, []);
+    if (!signedIn) setState(loadState());
+  }, [signedIn]);
 
   const alreadyPlayedToday = state?.lastPlayedDate === todayKey(today);
 
-  function handleChoose(choice: GrannyChoice) {
-    if (alreadyPlayedToday || !state) return;
+  async function handleChoose(choice: GrannyChoice) {
+    if (alreadyPlayedToday || pending) return;
+    setError(null);
+
+    if (signedIn) {
+      setPending(true);
+      try {
+        const result = await playGrannyScenario(choice.id);
+        setState({
+          score: result.score,
+          streak: result.streak,
+          lastPlayedDate: result.lastPlayedDate,
+          stats: result.stats,
+        });
+        setChosenId(choice.id);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Something went wrong. Try again.");
+      } finally {
+        setPending(false);
+      }
+      return;
+    }
+
+    if (!state) return;
     setChosenId(choice.id);
 
     const wasYesterday = (() => {
@@ -135,8 +170,9 @@ export default function GrannysMoneyCorner() {
             <button
               key={choice.id}
               type="button"
+              disabled={pending}
               onClick={() => handleChoose(choice)}
-              className="ledger-card flex items-center justify-between gap-3 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-md"
+              className="ledger-card flex items-center justify-between gap-3 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
             >
               <span className="flex items-center gap-2 text-ink">
                 <span aria-hidden="true">{choice.emoji}</span>
@@ -149,6 +185,8 @@ export default function GrannysMoneyCorner() {
           ))}
         </div>
       )}
+
+      {error && <p className="mt-4 text-rust text-sm">{error}</p>}
 
       {showResult && (
         <div className="mt-6 space-y-4">
@@ -182,12 +220,21 @@ export default function GrannysMoneyCorner() {
             </div>
           )}
 
-          <a
-            href="/login"
-            className="inline-block rounded-full bg-gilt-bright px-5 py-2.5 font-medium text-white transition hover:brightness-95"
-          >
-            Start tracking your real money &rarr;
-          </a>
+          {signedIn ? (
+            <Link
+              href="/dashboard/overview"
+              className="inline-block rounded-full bg-gilt-bright px-5 py-2.5 font-medium text-white transition hover:brightness-95"
+            >
+              See it on your dashboard &rarr;
+            </Link>
+          ) : (
+            <a
+              href="/login"
+              className="inline-block rounded-full bg-gilt-bright px-5 py-2.5 font-medium text-white transition hover:brightness-95"
+            >
+              Start tracking your real money &rarr;
+            </a>
+          )}
         </div>
       )}
     </section>
