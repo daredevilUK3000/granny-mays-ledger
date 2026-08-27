@@ -5,6 +5,8 @@ import { getCategories } from "@/lib/data/categories";
 import { getGoals } from "@/lib/data/goals";
 import { getProfile } from "@/lib/data/profile";
 import { getGrannyScore } from "@/lib/data/granny-score";
+import { getScoreBadge, getStreakBadge } from "@/lib/badges";
+import { ShareBadgeButton } from "@/components/ShareBadgeButton";
 
 // Character stats realistically land somewhere around -50..+100 after a
 // handful of days played anonymously — map that range onto a 0-100% bar.
@@ -137,6 +139,35 @@ export default async function OverviewPage({
             From Granny&rsquo;s Money Corner
           </p>
           <p className="tabular text-2xl text-gilt-bright mt-1">{grannyScore.score}</p>
+
+          {(() => {
+            const scoreBadge = getScoreBadge(grannyScore.score);
+            const streakBadge = getStreakBadge(grannyScore.streak);
+            const shareBadge = scoreBadge ?? streakBadge;
+            if (!scoreBadge && !streakBadge) return null;
+            return (
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                {scoreBadge && (
+                  <span className="tabular rounded-full bg-gilt-soft px-3 py-1 text-xs text-gilt">
+                    🎖️ {scoreBadge.name}
+                  </span>
+                )}
+                {streakBadge && (
+                  <span className="tabular rounded-full bg-rust-soft px-3 py-1 text-xs text-rust">
+                    🔥 {streakBadge.name}
+                  </span>
+                )}
+                {shareBadge && (
+                  <ShareBadgeButton
+                    badgeId={shareBadge.id}
+                    label="Share"
+                    className="tabular text-xs text-ink-soft underline underline-offset-2 hover:text-ink"
+                  />
+                )}
+              </div>
+            );
+          })()}
+
           <div className="space-y-2 mt-4">
             {[
               { label: "Savings discipline", value: grannyScore.savings_discipline, tone: "bg-sage" },

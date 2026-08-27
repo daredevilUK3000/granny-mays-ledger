@@ -9,6 +9,8 @@ import {
   type GrannyScenario,
 } from "@/lib/granny-scenarios";
 import { playGrannyScenario } from "@/lib/actions";
+import { getScoreBadge, getStreakBadge, getNewlyCrossedBadge, getBadgeById } from "@/lib/badges";
+import { ShareBadgeButton } from "@/components/ShareBadgeButton";
 
 /**
  * Granny's Money Corner — the daily "What Would Granny Do?" widget.
@@ -25,6 +27,10 @@ import { playGrannyScenario } from "@/lib/actions";
  *   same account row keeps updating every day, server-validated. The
  *   parent page fetches the current DB state and passes it as
  *   initialState.
+ * - Badges (lib/badges.ts) are pure functions of score/streak — nothing
+ *   extra to persist. The "New: X" reveal only fires the moment a
+ *   session's own play crosses a threshold; the badge itself keeps
+ *   showing quietly afterwards, every time, computed fresh from state.
  */
 
 export const GRANNY_STORAGE_KEY = "granny-money-corner:v1";
@@ -92,6 +98,7 @@ export default function GrannysMoneyCorner({
   const [chosenId, setChosenId] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newBadgeId, setNewBadgeId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!signedIn) setState(loadState());
@@ -102,6 +109,7 @@ export default function GrannysMoneyCorner({
   async function handleChoose(choice: GrannyChoice) {
     if (alreadyPlayedToday || pending) return;
     setError(null);
+    setNewBadgeId(null);
 
     if (signedIn) {
       setPending(true);
@@ -114,6 +122,7 @@ export default function GrannysMoneyCorner({
           stats: result.stats,
         });
         setChosenId(choice.id);
+        setNewBadgeId(result.newBadgeId);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong. Try again.");
       } finally {
@@ -145,10 +154,16 @@ export default function GrannysMoneyCorner({
     };
     setState(next);
     saveState(next);
+    const crossed = getNewlyCrossedBadge(state.score, next.score, state.streak, next.streak);
+    setNewBadgeId(crossed?.id ?? null);
   }
 
   const chosen = scenario.choices.find((c) => c.id === chosenId) ?? null;
   const showResult = alreadyPlayedToday || chosen !== null;
+  const newBadge = newBadgeId ? getBadgeById(newBadgeId) : null;
+  const scoreBadge = state ? getScoreBadge(state.score) : null;
+  const streakBadge = state ? getStreakBadge(state.streak) : null;
+  const shareBadge = newBadge ?? scoreBadge ?? streakBadge;
 
   return (
     <section className="ledger-card mx-auto max-w-xl px-6 py-8 sm:px-10 sm:py-10">
@@ -204,6 +219,19 @@ export default function GrannysMoneyCorner({
             </p>
           )}
 
+          {newBadge && (
+            <div className="rounded-lg bg-gilt-soft px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-ink">
+                <span aria-hidden="true">🎖️</span> New: <span className="font-display text-lg">{newBadge.name}</span>
+              </p>
+              <ShareBadgeButton
+                badgeId={newBadge.id}
+                label="Share"
+                className="tabular text-sm text-gilt underline underline-offset-2 hover:text-gilt-bright"
+              />
+            </div>
+          )}
+
           {state && (
             <div className="ledger-rule flex flex-wrap items-center gap-4 pt-4">
               <div>
@@ -216,6 +244,18 @@ export default function GrannysMoneyCorner({
                 <div className="tabular rounded-full bg-rust-soft px-3 py-1 text-sm text-rust">
                   🔥 {state.streak}-day streak
                 </div>
+              )}
+              {scoreBadge && (
+                <div className="tabular rounded-full bg-gilt-soft px-3 py-1 text-sm text-gilt">
+                  🎖️ {scoreBadge.name}
+                </div>
+              )}
+              {!newBadge && shareBadge && (
+                <ShareBadgeButton
+                  badgeId={shareBadge.id}
+                  label="Share badge"
+                  className="tabular text-sm text-ink-soft underline underline-offset-2 hover:text-ink"
+                />
               )}
             </div>
           )}

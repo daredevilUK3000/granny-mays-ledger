@@ -9,6 +9,7 @@ import { GOAL_LIMIT } from "@/lib/data/goals";
 import { SINKING_FUND_LIMIT } from "@/lib/data/sinkingfunds";
 import { getProfile } from "@/lib/data/profile";
 import { getScenarioForDate } from "@/lib/granny-scenarios";
+import { getNewlyCrossedBadge } from "@/lib/badges";
 
 // ---------------------------------------------------------------------
 // Categories
@@ -844,6 +845,13 @@ export async function playGrannyScenario(choiceId: string) {
   const { error } = await supabase.from("granny_scores").upsert(next, { onConflict: "user_id" });
   if (error) throw error;
 
+  const newBadge = getNewlyCrossedBadge(
+    existing?.score ?? 0,
+    next.score,
+    existing?.streak ?? 0,
+    next.streak,
+  );
+
   revalidatePath("/");
   revalidatePath("/dashboard/overview");
 
@@ -858,6 +866,7 @@ export async function playGrannyScenario(choiceId: string) {
       debtManagement: next.debt_management,
       budgeting: next.budgeting,
     },
+    newBadgeId: newBadge?.id ?? null,
   };
 }
 
