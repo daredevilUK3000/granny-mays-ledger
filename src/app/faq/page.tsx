@@ -32,8 +32,8 @@ const faqs = [
     a: "They're for expenses you know are coming but that don't happen monthly \u2014 an annual bill, a big repair. Set a target amount and (optionally) a date you need it by, and contribute toward it over time, separately from your regular monthly budget.",
   },
   {
-    q: "Can I cancel Premium anytime?",
-    a: "Yes. Cancelling stops future billing; your account reverts to Free rather than being deleted, so your data is kept.",
+    q: "Is Premium a subscription?",
+    a: "No. It's a one-time purchase — pay once and Premium features are unlocked for the life of your account. No recurring billing, nothing to cancel.",
   },
   {
     q: "What happens to my data if I cancel or stop using the app?",

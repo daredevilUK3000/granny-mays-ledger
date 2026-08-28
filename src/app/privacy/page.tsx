@@ -56,7 +56,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-display text-lg text-ink mb-2">Payment information</h2>
             <p>
-              If you subscribe to Premium, payment is handled entirely by our payment processor
+              If you purchase Premium, payment is handled entirely by our payment processor
               (Stripe). We never see or store your card details ourselves.
             </p>
           </section>

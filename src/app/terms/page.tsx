@@ -40,10 +40,9 @@ export default function TermsPage() {
             <h2 className="font-display text-lg text-ink mb-2">Free and Premium plans</h2>
             <p>
               A Free plan is available with core features and reasonable limits (for example, on
-              the number of active goals and sinking funds). Premium is a paid subscription that
-              unlocks additional features, billed on the cycle you choose at sign-up (monthly or
-              annual). You can cancel at any time; cancelling stops future billing and your
-              account reverts to Free rather than being deleted.
+              the number of active goals and sinking funds). Premium is a one-time purchase that
+              unlocks additional features for the life of your account — no recurring billing,
+              no subscription to cancel.
             </p>
           </section>
 

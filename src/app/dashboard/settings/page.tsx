@@ -1,14 +1,20 @@
 import { requireUserId, getCurrentUserEmail } from "@/lib/auth";
 import { getProfile } from "@/lib/data/profile";
 import { updateProfile } from "@/lib/actions";
+import { createCheckoutSession } from "@/lib/billing";
 
 const currencies = ["USD", "EUR", "GBP", "CAD", "AUD"];
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ upgraded?: string }>;
+}) {
   const userId = await requireUserId();
-  const [profile, email] = await Promise.all([
+  const [profile, email, { upgraded }] = await Promise.all([
     getProfile(userId),
     getCurrentUserEmail(),
+    searchParams,
   ]);
 
   return (
@@ -72,7 +78,22 @@ export default async function SettingsPage() {
 
       <div className="ledger-rule pt-6 mt-10 max-w-sm">
         <p className="text-xs text-ink-soft uppercase tracking-wide mb-2">Plan</p>
-        <p className="text-sm text-ink capitalize">{profile.plan}</p>
+        <p className="text-sm text-ink capitalize mb-3">{profile.plan}</p>
+        {profile.plan === "premium" && upgraded === "1" && (
+          <p className="text-sm text-sage mb-3">
+            You&rsquo;re on Premium &mdash; thanks for the support!
+          </p>
+        )}
+        {profile.plan !== "premium" && (
+          <form action={createCheckoutSession}>
+            <button
+              type="submit"
+              className="rounded-full bg-gilt-bright px-5 py-2.5 text-sm font-medium text-white transition hover:brightness-95"
+            >
+              Upgrade to Premium
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

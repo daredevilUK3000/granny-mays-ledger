@@ -1,3 +1,5 @@
+import { createCheckoutSession } from "@/lib/billing";
+
 export function PremiumLockedCard({
   title,
   description,
@@ -15,9 +17,14 @@ export function PremiumLockedCard({
         <p className="text-ink-soft text-sm leading-relaxed mb-6">
           {description}
         </p>
-        <button className="border border-plum text-plum px-4 py-2 text-sm hover:bg-plum hover:text-parchment transition-colors">
-          Upgrade to Premium
-        </button>
+        <form action={createCheckoutSession}>
+          <button
+            type="submit"
+            className="border border-plum text-plum px-4 py-2 text-sm hover:bg-plum hover:text-parchment transition-colors"
+          >
+            Upgrade to Premium
+          </button>
+        </form>
       </div>
     </div>
   );
