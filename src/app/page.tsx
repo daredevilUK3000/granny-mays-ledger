@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "@/components/Logo";
 import { Footer } from "@/components/Footer";
 import { HeroLedgerCard } from "@/components/HeroLedgerCard";
@@ -138,30 +139,51 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 py-24">
-        <Reveal>
-          <div className="ledger-rule pt-8">
-            <h2 className="font-display text-2xl text-ink mb-6">
-              What people actually want to know
-            </h2>
-            <ul className="space-y-0">
-              {jobs.map((job, i) => (
-                <li
-                  key={job}
-                  className="ledger-rule flex items-baseline gap-4 py-5 last:pb-0"
-                >
-                  <span
-                    className="tabular text-lg font-medium"
-                    style={{ color: [`var(--sage)`, `var(--rust)`, `var(--plum)`, `var(--gilt-bright)`][i % 4] }}
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
+          <Reveal>
+            <div className="ledger-rule pt-8">
+              <h2 className="font-display text-2xl text-ink mb-6">
+                What people actually want to know
+              </h2>
+              <ul className="space-y-0">
+                {jobs.map((job, i) => (
+                  <li
+                    key={job}
+                    className="ledger-rule flex items-baseline gap-4 py-5 last:pb-0"
                   >
-                    &bull;
-                  </span>
-                  <span className="text-ink text-lg">{job}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
+                    <span
+                      className="tabular text-lg font-medium"
+                      style={{ color: [`var(--sage)`, `var(--rust)`, `var(--plum)`, `var(--gilt-bright)`][i % 4] }}
+                    >
+                      &bull;
+                    </span>
+                    <span className="text-ink text-lg">{job}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+          <Reveal delay={120}>
+            <Link
+              href="/bookcase"
+              className="group block w-96 sm:w-[28rem] mx-auto lg:mx-0 transition-transform hover:-translate-y-1"
+            >
+              <div className="relative aspect-square">
+                <Image
+                  src="/granny-book-choice.png"
+                  alt="Granny May's Book Choice — an illustrated bookcase of financial literacy books"
+                  fill
+                  sizes="(min-width: 640px) 448px, 384px"
+                  className="object-contain drop-shadow-[0_12px_20px_rgba(28,43,57,0.18)]"
+                />
+              </div>
+              <p className="mt-1 text-center text-sm text-ink-soft group-hover:text-ink transition-colors">
+                Browse the shelf &rarr;
+              </p>
+            </Link>
+          </Reveal>
+        </div>
       </section>
 
       <section className="mx-auto max-w-3xl px-6 pb-24">

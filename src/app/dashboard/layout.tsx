@@ -13,6 +13,7 @@ const freeNav = [
   { href: "/dashboard/categories", label: "Categories" },
   { href: "/dashboard/goals", label: "Goals" },
   { href: "/dashboard/decisions", label: "Decisions" },
+  { href: "/dashboard/reading", label: "Recommended reading" },
 ];
 
 const premiumNav = [
