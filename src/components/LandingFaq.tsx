@@ -1,44 +1,69 @@
 import Link from "next/link";
 
-const QUESTIONS = [
-  "Where did my money go this month?",
-  "How much do I need to save each month to hit a goal by a date?",
-  "What happens if I invest €300 a month?",
-  "What's the fastest way to clear this debt?",
+/**
+ * "What people actually want to know" — landing page FAQ teaser.
+ * Redesign goal: give the list actual elevation (it previously sat
+ * directly on the parchment background with no card, no depth) while
+ * keeping the existing per-question accent colors.
+ *
+ * hrefs point at /login for now — every other CTA on this page does the
+ * same, and there's no dedicated feature/anchor destination yet for each
+ * question to link to instead.
+ */
+
+interface FaqItem {
+  question: string;
+  href: string;
+  tone: "sage" | "rust" | "plum";
+}
+
+const FAQS: FaqItem[] = [
+  { question: "Where did my money go this month?", href: "/login", tone: "sage" },
+  { question: "How much do I need to save each month to hit a goal by a date?", href: "/login", tone: "rust" },
+  { question: "What happens if I invest €300 a month?", href: "/login", tone: "plum" },
+  { question: "What's the fastest way to clear this debt?", href: "/login", tone: "rust" },
 ];
 
-const DOT_COLORS = ["var(--sage)", "var(--rust)", "var(--plum)", "var(--gilt-bright)"];
+const toneStyles = {
+  sage: { bg: "bg-sage-soft", text: "text-sage", hoverBg: "hover:bg-sage-soft" },
+  rust: { bg: "bg-rust-soft", text: "text-rust", hoverBg: "hover:bg-rust-soft" },
+  plum: { bg: "bg-plum-soft", text: "text-plum", hoverBg: "hover:bg-plum-soft" },
+};
 
 export function LandingFaq() {
   return (
-    <div className="ledger-card h-full px-8 py-10">
-      <div className="gilt-flourish mb-4" />
-      <h2 className="font-display text-2xl text-ink mb-6">
+    <div className="ledger-card px-8 py-9 sm:px-10 sm:py-10">
+      <div className="gilt-flourish mb-5" />
+      <h2 className="font-display text-2xl text-ink sm:text-3xl">
         What people actually want to know
       </h2>
-      <ul>
-        {QUESTIONS.map((question, i) => (
-          <li
-            key={question}
-            className={i > 0 ? "border-t border-dashed border-rule" : ""}
-          >
+      <p className="tabular mt-2 text-xs uppercase tracking-wide text-ink-soft">
+        Real questions, answered by the app
+      </p>
+
+      <div className="mt-6">
+        {FAQS.map((item, i) => {
+          const tone = toneStyles[item.tone];
+          return (
             <Link
-              href="/login"
-              className="group -mx-2 flex items-baseline gap-4 rounded-[3px] px-2 py-5 transition-colors hover:bg-parchment-dim"
+              key={item.question}
+              href={item.href}
+              className={`group flex items-start gap-3.5 rounded-md px-3 py-3.5 transition-colors ${tone.hoverBg} ${
+                i < FAQS.length - 1 ? "border-b border-dashed border-rule" : ""
+              }`}
             >
               <span
-                className="tabular text-lg font-medium shrink-0"
-                style={{ color: DOT_COLORS[i % DOT_COLORS.length] }}
+                className={`tabular mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${tone.bg} ${tone.text}`}
               >
-                &bull;
+                ?
               </span>
-              <span className="text-ink text-lg transition-colors group-hover:text-gilt-bright">
-                {question}
+              <span className="text-[15px] leading-relaxed text-ink group-hover:text-ink">
+                {item.question}
               </span>
             </Link>
-          </li>
-        ))}
-      </ul>
+          );
+        })}
+      </div>
     </div>
   );
 }
