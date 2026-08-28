@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createCheckoutSession } from "@/lib/billing";
 
 /**
  * Pricing, styled as an open ledger book rather than generic SaaS cards —
@@ -6,8 +7,11 @@ import Link from "next/link";
  * like a ledger entry.
  *
  * premiumPrice is passed in from the server, fetched live from Stripe —
- * same convention as the existing billing page (getPriceDisplay). Never
- * hardcode a price string here.
+ * never hardcode a price string here.
+ *
+ * The Premium CTA is signed-in aware: an already-authenticated visitor
+ * goes straight to Stripe Checkout; everyone else goes to /login first,
+ * same as every other CTA on this page.
  */
 
 const FREE_FEATURES = [
@@ -26,7 +30,13 @@ const PREMIUM_FEATURES = [
   "Decision journal insights + CSV import",
 ];
 
-export function PricingLedger({ premiumPrice }: { premiumPrice: string }) {
+export function PricingLedger({
+  premiumPrice,
+  signedIn = false,
+}: {
+  premiumPrice: string;
+  signedIn?: boolean;
+}) {
   return (
     <div>
       <p className="tabular text-center text-xs uppercase tracking-wide text-sage">
@@ -103,12 +113,23 @@ export function PricingLedger({ premiumPrice }: { premiumPrice: string }) {
             ))}
           </ul>
 
-          <Link
-            href="/login"
-            className="mt-7 block rounded-full bg-gilt-bright px-5 py-2.5 text-center text-sm font-medium text-white transition hover:brightness-95"
-          >
-            Go Premium &mdash; once, no subscription
-          </Link>
+          {signedIn ? (
+            <form action={createCheckoutSession}>
+              <button
+                type="submit"
+                className="mt-7 block w-full rounded-full bg-gilt-bright px-5 py-2.5 text-center text-sm font-medium text-white transition hover:brightness-95"
+              >
+                Go Premium &mdash; once, no subscription
+              </button>
+            </form>
+          ) : (
+            <Link
+              href="/login"
+              className="mt-7 block rounded-full bg-gilt-bright px-5 py-2.5 text-center text-sm font-medium text-white transition hover:brightness-95"
+            >
+              Go Premium &mdash; once, no subscription
+            </Link>
+          )}
         </div>
       </div>
 

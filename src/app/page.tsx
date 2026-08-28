@@ -10,12 +10,7 @@ import { LandingFaq } from "@/components/LandingFaq";
 import { PricingLedger } from "@/components/PricingLedger";
 import { getCurrentUser } from "@/lib/auth";
 import { getGrannyScore } from "@/lib/data/granny-score";
-
-// TODO: no live Stripe pricing exists in this codebase yet (no `stripe`
-// dependency, no price-fetch helper, no billing page) \u2014 this is a static
-// stand-in, not a fetched value. Wire up real Stripe pricing and replace
-// this before ship; see the conversation with Claude for context.
-const premiumPrice = "See pricing";
+import { getPremiumPriceDisplay } from "@/lib/billing";
 
 const trustPoints = [
   { label: "No bank connections", detail: "Your account details never leave your bank.", tone: "sage" as const },
@@ -26,6 +21,7 @@ const trustPoints = [
 export default async function LandingPage() {
   const user = await getCurrentUser();
   const email = user?.email ?? null;
+  const premiumPrice = await getPremiumPriceDisplay().catch(() => "See pricing");
 
   const grannyScore = user ? await getGrannyScore(user.id) : null;
   const grannyInitialState: GrannyLocalState | null = grannyScore
@@ -171,7 +167,7 @@ export default async function LandingPage() {
 
       <section className="mx-auto max-w-4xl px-6 pb-24">
         <Reveal>
-          <PricingLedger premiumPrice={premiumPrice} />
+          <PricingLedger premiumPrice={premiumPrice} signedIn={!!email} />
         </Reveal>
       </section>
 

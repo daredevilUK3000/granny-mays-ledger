@@ -14,6 +14,27 @@ async function getOrigin(): Promise<string> {
 }
 
 /**
+ * Formats the live Premium price for display (e.g. "$49"), fetched
+ * straight from Stripe rather than hardcoded — if the price ever changes
+ * in the Stripe dashboard, this reflects it without a code deploy.
+ */
+export async function getPremiumPriceDisplay(): Promise<string> {
+  const priceId = process.env.STRIPE_PRICE_ID;
+  if (!priceId) throw new Error("STRIPE_PRICE_ID is not set.");
+
+  const stripe = getStripeClient();
+  const price = await stripe.prices.retrieve(priceId);
+
+  if (price.unit_amount == null) throw new Error("Price has no unit_amount.");
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: price.currency,
+    minimumFractionDigits: price.unit_amount % 100 === 0 ? 0 : 2,
+  }).format(price.unit_amount / 100);
+}
+
+/**
  * Starts a Stripe Checkout session for the one-time Premium purchase and
  * redirects the signed-in user to it. Premium is "mode: payment" — a
  * single charge, not a subscription.
