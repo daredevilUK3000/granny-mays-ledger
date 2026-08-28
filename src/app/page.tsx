@@ -6,15 +6,16 @@ import { HeroLedgerCard } from "@/components/HeroLedgerCard";
 import { HeroVideoBackground } from "@/components/HeroVideoBackground";
 import { Reveal } from "@/components/Reveal";
 import GrannysMoneyCorner, { type GrannyLocalState } from "@/components/GrannysMoneyCorner";
+import { LandingFaq } from "@/components/LandingFaq";
+import { PricingLedger } from "@/components/PricingLedger";
 import { getCurrentUser } from "@/lib/auth";
 import { getGrannyScore } from "@/lib/data/granny-score";
 
-const jobs = [
-  "Where did my money go this month?",
-  "How much do I need to save each month to hit a goal by a date?",
-  "What happens if I invest \u20ac300 a month?",
-  "What's the fastest way to clear this debt?",
-];
+// TODO: no live Stripe pricing exists in this codebase yet (no `stripe`
+// dependency, no price-fetch helper, no billing page) \u2014 this is a static
+// stand-in, not a fetched value. Wire up real Stripe pricing and replace
+// this before ship; see the conversation with Claude for context.
+const premiumPrice = "See pricing";
 
 const trustPoints = [
   { label: "No bank connections", detail: "Your account details never leave your bank.", tone: "sage" as const },
@@ -140,72 +141,37 @@ export default async function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-24">
-        <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
+        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-stretch">
           <Reveal>
-            <div className="ledger-rule pt-8">
-              <h2 className="font-display text-2xl text-ink mb-6">
-                What people actually want to know
-              </h2>
-              <ul className="space-y-0">
-                {jobs.map((job, i) => (
-                  <li
-                    key={job}
-                    className="ledger-rule flex items-baseline gap-4 py-5 last:pb-0"
-                  >
-                    <span
-                      className="tabular text-lg font-medium"
-                      style={{ color: [`var(--sage)`, `var(--rust)`, `var(--plum)`, `var(--gilt-bright)`][i % 4] }}
-                    >
-                      &bull;
-                    </span>
-                    <span className="text-ink text-lg">{job}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <LandingFaq />
           </Reveal>
           <Reveal delay={120}>
-            <Link
-              href="/bookcase"
-              className="group block w-96 sm:w-[28rem] mx-auto lg:mx-0 transition-transform hover:-translate-y-1"
-            >
-              <div className="relative aspect-square">
-                <Image
-                  src="/granny-book-choice.png"
-                  alt="Granny May's Book Choice — an illustrated bookcase of financial literacy books"
-                  fill
-                  sizes="(min-width: 640px) 448px, 384px"
-                  className="object-contain drop-shadow-[0_12px_20px_rgba(28,43,57,0.18)]"
-                />
-              </div>
-              <p className="mt-1 text-center text-sm text-ink-soft group-hover:text-ink transition-colors">
-                Browse the shelf &rarr;
-              </p>
-            </Link>
+            <div className="ledger-card flex h-full flex-col items-center justify-center gap-4 px-8 py-10">
+              <Link
+                href="/bookcase"
+                className="group block w-full max-w-md transition-transform hover:-translate-y-1"
+              >
+                <div className="relative aspect-square">
+                  <Image
+                    src="/granny-book-choice.png"
+                    alt="Granny May's Book Choice — an illustrated bookcase of financial literacy books"
+                    fill
+                    sizes="(min-width: 640px) 448px, 384px"
+                    className="object-contain drop-shadow-[0_12px_20px_rgba(28,43,57,0.18)]"
+                  />
+                </div>
+                <p className="mt-1 text-center text-sm text-ink-soft group-hover:text-ink transition-colors">
+                  Browse the shelf &rarr;
+                </p>
+              </Link>
+            </div>
           </Reveal>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 pb-24">
+      <section className="mx-auto max-w-4xl px-6 pb-24">
         <Reveal>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="rounded-xl p-6 border-2 border-sage bg-sage-soft hover:-translate-y-1 transition-transform">
-              <h3 className="font-display text-xl text-ink mb-2">Free</h3>
-              <p className="text-ink-soft text-sm leading-relaxed">
-                Manual budget tracking, monthly category budgets, sinking
-                funds, a financial decisions journal, and up to 2 savings
-                goals with progress and on-track indicators.
-              </p>
-            </div>
-            <div className="rounded-xl p-6 border-2 border-plum bg-plum-soft hover:-translate-y-1 transition-transform">
-              <h3 className="font-display text-xl text-plum mb-2">Premium</h3>
-              <p className="text-ink-soft text-sm leading-relaxed">
-                Up to 5 goals, investment projections, debt payoff plans
-                (snowball or avalanche), net worth tracking with a Time to
-                Freedom projection, decision journal insights, and CSV import.
-              </p>
-            </div>
-          </div>
+          <PricingLedger premiumPrice={premiumPrice} />
         </Reveal>
       </section>
 
