@@ -9,12 +9,14 @@ import { CsvImporter } from "@/components/CsvImporter";
 export default async function ImportPage() {
   const userId = await requireUserId();
   const profile = await getProfile(userId);
+  const isPremium = profile.plan === "premium";
+  const freeImportUsed = !isPremium && !!profile.free_csv_import_used_at;
 
-  if (profile.plan !== "premium") {
+  if (freeImportUsed) {
     return (
       <PremiumLockedCard
         title="Import"
-        description="Bring in transactions from a CSV export \u2014 upload, preview, and import with a full validation report."
+        description="You've used your one free import. Upgrade to Premium for unlimited, ongoing CSV import \u2014 upload, preview, and import with a full validation report, any time."
       />
     );
   }
@@ -59,6 +61,13 @@ export default async function ImportPage() {
           Download a sample CSV in the right format &rarr;
         </a>
       </div>
+
+      {!isPremium && (
+        <p className="text-sm text-plum bg-plum-soft rounded-md px-4 py-3 mb-6 max-w-lg leading-relaxed">
+          You get one free import to try the app with your real numbers &mdash; make it
+          count, or upgrade for ongoing imports.
+        </p>
+      )}
 
       <CsvImporter
         categoryNames={categories.map((c) => c.name)}

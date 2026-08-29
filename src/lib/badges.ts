@@ -9,8 +9,8 @@
 
 export interface Badge {
   id: string;
-  kind: "score" | "streak";
-  threshold: number; // score points, or streak days
+  kind: "score" | "streak" | "unspent";
+  threshold: number; // score points, streak days, or lifetime un-spent total
   name: string;
   /** Warm, in Granny's voice. Never references the numeric score/streak
    *  directly — the badge travels, the figures don't. */
@@ -86,7 +86,52 @@ export const STREAK_BADGES: Badge[] = [
   },
 ];
 
-const ALL_BADGES = [...SCORE_BADGES, ...STREAK_BADGES];
+/**
+ * Track the Un-Spent badges — a fully separate namespace from the Money
+ * Corner score/streak badges above. Deliberately not merged into
+ * getNewlyCrossedBadge: un-spent totals are a self-reported, emotional
+ * number, not the same "game" as the daily scenario score, and blending
+ * the two would make an already-fuzzy figure fuzzier still.
+ */
+export const UNSPENT_BADGES: Badge[] = [
+  {
+    id: "first-walk-away",
+    kind: "unspent",
+    threshold: 1,
+    name: "First Walk-Away",
+    description: "For the first time you chose not to, and wrote it down.",
+  },
+  {
+    id: "steady-restraint",
+    kind: "unspent",
+    threshold: 50,
+    name: "Steady Restraint",
+    description: "For a habit that's clearly starting to stick.",
+  },
+  {
+    id: "well-walked",
+    kind: "unspent",
+    threshold: 200,
+    name: "Well Walked",
+    description: "For a good few moments of choosing not to.",
+  },
+  {
+    id: "grannys-nod",
+    kind: "unspent",
+    threshold: 500,
+    name: "Granny's Nod",
+    description: "For restraint that's earned a proper nod of approval.",
+  },
+  {
+    id: "the-unspent-ledger",
+    kind: "unspent",
+    threshold: 1000,
+    name: "The Un-Spent Ledger",
+    description: "For a track record of walking away, kept faithfully.",
+  },
+];
+
+const ALL_BADGES = [...SCORE_BADGES, ...STREAK_BADGES, ...UNSPENT_BADGES];
 
 /** The highest score badge reached so far, or null. */
 export function getScoreBadge(score: number): Badge | null {
@@ -99,6 +144,13 @@ export function getScoreBadge(score: number): Badge | null {
 export function getStreakBadge(streak: number): Badge | null {
   let current: Badge | null = null;
   for (const b of STREAK_BADGES) if (streak >= b.threshold) current = b;
+  return current;
+}
+
+/** The highest un-spent badge reached by the lifetime total so far, or null. */
+export function getUnspentBadge(total: number): Badge | null {
+  let current: Badge | null = null;
+  for (const b of UNSPENT_BADGES) if (total >= b.threshold) current = b;
   return current;
 }
 

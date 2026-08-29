@@ -5,7 +5,7 @@ export async function getProfile(userId: string) {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, currency, date_format, start_of_week, plan, subscription_status, onboarded_at"
+      "id, currency, date_format, start_of_week, plan, subscription_status, onboarded_at, free_csv_import_used_at"
     )
     .eq("id", userId)
     .single();

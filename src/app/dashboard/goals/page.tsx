@@ -3,6 +3,8 @@ import { getGoals } from "@/lib/data/goals";
 import { getProfile } from "@/lib/data/profile";
 import { createGoal, deleteGoal, addGoalContribution } from "@/lib/actions";
 import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
+import { GrannysNote } from "@/components/GrannysNote";
+import { getActiveGrannyNotes } from "@/lib/data/granny-notes";
 
 function money(n: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
@@ -16,10 +18,17 @@ export default async function GoalsPage() {
   const currency = profile.currency;
   const atLimit = goals.length >= limit;
 
+  const activeNotes = await getActiveGrannyNotes(userId);
+  const goalNote = activeNotes.find(
+    (n) => n.tier === "goal_milestone" || n.tier === "goal_complete"
+  );
+
   return (
     <div>
       <h1 className="font-display text-3xl text-ink mb-2">Goals</h1>
       <div className="gilt-flourish mb-4" />
+
+      {goalNote && <GrannysNote note={goalNote} />}
       <p className="text-ink-soft text-sm mb-8">
         {goals.length} of {limit} goals used
         {!isPremium && " (free plan)"}

@@ -77,9 +77,9 @@ export default async function LandingPage() {
               Keep your own <em className="text-plum not-italic">ledger.</em>
             </h1>
             <p className="text-ink-soft text-sm sm:text-base leading-relaxed mb-6 max-w-md">
-              A budget tracker and goal planner for people who'd rather enter
-              their own numbers than link their bank account to a stranger's
-              server.
+              Take back control of your money. A secure, manual budget tracker
+              for people who want to understand their finances &mdash; without
+              handing their bank logins to a stranger's server.
             </p>
             <Link
               href="/login"
@@ -110,6 +110,14 @@ export default async function LandingPage() {
             );
           })}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-2xl px-6 py-10 text-center">
+        <p className="text-ink-soft text-sm sm:text-base leading-relaxed">
+          Automated apps make it easy to lose track of where your money goes.
+          Writing it down yourself keeps you close to your numbers &mdash; most
+          people find they naturally spend less once they can actually see it.
+        </p>
       </section>
 
       <section className="w-full bg-ink-deep py-20">
@@ -163,6 +171,28 @@ export default async function LandingPage() {
             </div>
           </Reveal>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-6 py-16 text-center">
+        <Reveal>
+          <p className="tabular text-xs uppercase tracking-wide text-plum">
+            Financial Decisions Journal
+          </p>
+          <h2 className="mt-2 font-display text-2xl text-ink sm:text-3xl">
+            Stop impulse buying.
+          </h2>
+          <p className="mt-3 text-ink-soft text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            Use the Financial Decisions Journal to log the purchases you
+            walked away from, and watch your &ldquo;Un-spent&rdquo; money
+            grow.
+          </p>
+          <Link
+            href="/login"
+            className="tabular mt-6 inline-flex items-center rounded-full border border-plum px-6 py-2.5 text-sm text-plum font-medium hover:bg-plum hover:text-parchment transition-colors"
+          >
+            Start your journal &mdash; free
+          </Link>
+        </Reveal>
       </section>
 
       <section className="mx-auto max-w-4xl px-6 pb-24">

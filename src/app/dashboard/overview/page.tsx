@@ -5,8 +5,10 @@ import { getCategories } from "@/lib/data/categories";
 import { getGoals } from "@/lib/data/goals";
 import { getProfile } from "@/lib/data/profile";
 import { getGrannyScore } from "@/lib/data/granny-score";
-import { getScoreBadge, getStreakBadge } from "@/lib/badges";
+import { getScoreBadge, getStreakBadge, getUnspentBadge } from "@/lib/badges";
 import { ShareBadgeButton } from "@/components/ShareBadgeButton";
+import { UnspentTracker } from "@/components/UnspentTracker";
+import { getUnspentWins, sumUnspentWins, unspentWinsThisMonth } from "@/lib/data/decisions";
 
 // Character stats realistically land somewhere around -50..+100 after a
 // handful of days played anonymously — map that range onto a 0-100% bar.
@@ -33,13 +35,17 @@ export default async function OverviewPage({
   const { month: monthParam } = await searchParams;
   const month = monthParam ?? currentMonth();
 
-  const [summary, categories, profile, { goals }, grannyScore] = await Promise.all([
+  const [summary, categories, profile, { goals }, grannyScore, unspentWins] = await Promise.all([
     getMonthSummary(userId, month),
     getCategories(userId),
     getProfile(userId),
     getGoals(userId, false),
     getGrannyScore(userId),
+    getUnspentWins(userId),
   ]);
+
+  const unspentTotalThisMonth = sumUnspentWins(unspentWinsThisMonth(unspentWins, month));
+  const unspentBadge = getUnspentBadge(sumUnspentWins(unspentWins));
 
   const categoryName = new Map(categories.map((c) => [c.id, c.name]));
   const spendingByCategory = Array.from(summary.byCategory.entries())
@@ -81,6 +87,14 @@ export default async function OverviewPage({
           <p className="text-xs text-ink-soft uppercase tracking-wide">Savings rate</p>
           <p className="tabular text-xl text-ink mt-1">{(summary.savingsRate * 100).toFixed(0)}%</p>
         </div>
+      </div>
+
+      <div className="max-w-xs mb-10">
+        <UnspentTracker
+          initialTotalThisMonth={unspentTotalThisMonth}
+          currency={currency}
+          badge={unspentBadge}
+        />
       </div>
 
       <div className="grid md:grid-cols-2 gap-10">

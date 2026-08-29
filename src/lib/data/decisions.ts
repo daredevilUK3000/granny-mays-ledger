@@ -11,6 +11,21 @@ export type DecisionRow = {
   outcome: "worked" | "did_not_work" | null;
 };
 
+export type UnspentWinRow = {
+  id: string;
+  title: string;
+  amount: number;
+  category_name: string | null;
+  decision_date: string;
+};
+
+/**
+ * Reflections only — explicitly excludes 'walked_away' rows (Track the
+ * Un-Spent) so the Decisions Journal list, Best Decision/Biggest Regret
+ * stats, and Life Wins timeline never see them. Un-spent totals are a
+ * self-reported, emotional figure and must stay out of anything treated
+ * as this journal's real record.
+ */
 export async function getDecisions(userId: string): Promise<DecisionRow[]> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
@@ -19,10 +34,32 @@ export async function getDecisions(userId: string): Promise<DecisionRow[]> {
       "id, title, reasoning, expected_outcome, estimated_amount, decision_date, review_date, outcome"
     )
     .eq("user_id", userId)
+    .eq("entry_type", "reflection")
     .order("decision_date", { ascending: false });
 
   if (error) throw error;
   return (data ?? []) as DecisionRow[];
+}
+
+export async function getUnspentWins(userId: string): Promise<UnspentWinRow[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("financial_decisions")
+    .select("id, title, amount, category_name, decision_date")
+    .eq("user_id", userId)
+    .eq("entry_type", "walked_away")
+    .order("decision_date", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as UnspentWinRow[];
+}
+
+export function sumUnspentWins(wins: UnspentWinRow[]): number {
+  return wins.reduce((sum, w) => sum + Number(w.amount), 0);
+}
+
+export function unspentWinsThisMonth(wins: UnspentWinRow[], month: string): UnspentWinRow[] {
+  return wins.filter((w) => w.decision_date.startsWith(month));
 }
 
 /** Decisions whose review date has arrived but haven't been answered yet. */

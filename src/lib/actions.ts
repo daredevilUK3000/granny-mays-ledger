@@ -10,6 +10,7 @@ import { SINKING_FUND_LIMIT } from "@/lib/data/sinkingfunds";
 import { getProfile } from "@/lib/data/profile";
 import { getScenarioForDate } from "@/lib/granny-scenarios";
 import { getNewlyCrossedBadge } from "@/lib/badges";
+import { pickUnspentLine } from "@/lib/unspent-lines";
 
 // ---------------------------------------------------------------------
 // Categories
@@ -444,8 +445,20 @@ type ImportRow = {
 };
 
 export async function importCsvRows(rows: ImportRow[]) {
-  const userId = await requirePremiumUserId();
+  const userId = await requireUserId();
   const supabase = createAdminClient();
+
+  const profile = await getProfile(userId);
+  const isPremium = profile.plan === "premium";
+
+  // Free users get exactly one successful import (to properly evaluate
+  // the app with their real data) — enforced here, not just hidden in
+  // the UI, since a determined user could call this action directly.
+  if (!isPremium && profile.free_csv_import_used_at) {
+    throw new Error(
+      "You've used your free import. Upgrade to Premium for ongoing CSV import."
+    );
+  }
 
   const { data: categories, error: catError } = await supabase
     .from("categories")
@@ -518,6 +531,14 @@ export async function importCsvRows(rows: ImportRow[]) {
     const { error: insertError } = await supabase.from("transactions").insert(toInsert);
     if (insertError) throw insertError;
     importedCount = toInsert.length;
+  }
+
+  if (!isPremium && importedCount > 0) {
+    const { error: usedError } = await supabase
+      .from("profiles")
+      .update({ free_csv_import_used_at: new Date().toISOString() })
+      .eq("id", userId);
+    if (usedError) throw usedError;
   }
 
   const { error: jobError } = await supabase.from("csv_import_jobs").insert({
@@ -701,6 +722,76 @@ export async function deleteDecision(decisionId: string) {
 
   if (error) throw error;
   revalidatePath("/dashboard/decisions");
+}
+
+// ---------------------------------------------------------------------
+// Track the Un-Spent ("walked away" wins) — stored in financial_decisions
+// with entry_type: 'walked_away', kept out of the Decisions Journal's own
+// reflection queries. Never touches transactions/budgets/goals/net worth.
+// ---------------------------------------------------------------------
+export async function logUnspentWin(formData: FormData) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const amount = Number(formData.get("amount"));
+  const categoryName = String(formData.get("category_name") ?? "").trim() || null;
+  const decisionDate = String(formData.get("decision_date") ?? "") || new Date().toISOString().slice(0, 10);
+
+  if (!title || !amount || amount <= 0) {
+    throw new Error("A short description and an amount are required.");
+  }
+
+  const { error } = await supabase.from("financial_decisions").insert({
+    user_id: userId,
+    entry_type: "walked_away",
+    title,
+    amount,
+    category_name: categoryName,
+    decision_date: decisionDate,
+  });
+
+  if (error) throw error;
+  revalidatePath("/dashboard/overview");
+  revalidatePath("/dashboard/decisions");
+
+  return { message: pickUnspentLine() };
+}
+
+export async function deleteUnspentWin(winId: string) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("financial_decisions")
+    .delete()
+    .eq("id", winId)
+    .eq("user_id", userId)
+    .eq("entry_type", "walked_away");
+
+  if (error) throw error;
+  revalidatePath("/dashboard/overview");
+  revalidatePath("/dashboard/decisions");
+}
+
+// ---------------------------------------------------------------------
+// Granny's Notes — dismissing a note marks its trigger_key seen so it
+// never shows again for that specific threshold instance.
+// ---------------------------------------------------------------------
+export async function dismissGrannyNote(triggerKey: string) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("granny_notes_seen")
+    .insert({ user_id: userId, trigger_key: triggerKey });
+
+  // A duplicate (already dismissed elsewhere) is fine — the goal is just
+  // that a row exists, not that this call is the one that created it.
+  if (error && error.code !== "23505") throw error;
+
+  revalidatePath("/dashboard/budget");
+  revalidatePath("/dashboard/goals");
 }
 
 // ---------------------------------------------------------------------

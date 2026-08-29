@@ -1,9 +1,11 @@
 import { requireUserId } from "@/lib/auth";
 import { getProfile } from "@/lib/data/profile";
-import { getDecisions, getDueForReview } from "@/lib/data/decisions";
+import { getDecisions, getDueForReview, getUnspentWins, sumUnspentWins } from "@/lib/data/decisions";
 import { getLifeWinsEvents } from "@/lib/data/lifewins";
-import { createDecision, recordDecisionOutcome, deleteDecision } from "@/lib/actions";
+import { createDecision, recordDecisionOutcome, deleteDecision, deleteUnspentWin } from "@/lib/actions";
+import { getUnspentBadge } from "@/lib/badges";
 import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
+import { UnspentTracker } from "@/components/UnspentTracker";
 
 function money(n: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
@@ -29,6 +31,14 @@ export default async function DecisionsPage() {
 
   const decisions = await getDecisions(userId);
   const dueForReview = getDueForReview(decisions);
+
+  const unspentWins = await getUnspentWins(userId);
+  const unspentTotal = sumUnspentWins(unspentWins);
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const unspentTotalThisMonth = sumUnspentWins(
+    unspentWins.filter((w) => w.decision_date.startsWith(thisMonth))
+  );
+  const unspentBadge = getUnspentBadge(unspentTotal);
 
   const bestDecision = decisions
     .filter((d) => d.estimated_amount !== null && d.estimated_amount > 0)
@@ -83,6 +93,46 @@ export default async function DecisionsPage() {
           </div>
         </section>
       )}
+
+      <section className="mb-12">
+        <h2 className="font-display text-xl text-ink mb-4">Track the un-spent</h2>
+        <p className="text-ink-soft text-sm mb-4 max-w-lg leading-relaxed">
+          Skipped a coffee? Closed the cart instead of checking out? Log the moments you
+          chose not to spend &mdash; a motivational tally, kept separate from your real
+          numbers.
+        </p>
+        <div className="max-w-xs mb-6">
+          <UnspentTracker
+            initialTotalThisMonth={unspentTotalThisMonth}
+            currency={currency}
+            badge={unspentBadge}
+          />
+        </div>
+        {unspentWins.length > 0 && (
+          <div>
+            {unspentWins.map((w) => (
+              <div key={w.id} className="ledger-rule py-2 flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-ink">{w.title}</p>
+                  <p className="tabular text-xs text-ink-soft">
+                    {w.decision_date}
+                    <span className="text-plum"> &middot; {money(w.amount, currency)}</span>
+                    {w.category_name && <span> &middot; {w.category_name}</span>}
+                  </p>
+                </div>
+                <ConfirmDeleteForm
+                  action={deleteUnspentWin.bind(null, w.id) as unknown as (fd: FormData) => void}
+                  confirmMessage={`Delete "${w.title}"?`}
+                >
+                  <button type="submit" className="text-xs text-ink-soft hover:text-rust">
+                    Delete
+                  </button>
+                </ConfirmDeleteForm>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="mb-12">
         <h2 className="font-display text-xl text-ink mb-4">Log a decision</h2>

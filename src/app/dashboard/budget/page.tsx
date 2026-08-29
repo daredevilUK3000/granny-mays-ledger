@@ -14,6 +14,8 @@ import {
   addSinkingFundContribution,
 } from "@/lib/actions";
 import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
+import { GrannysNote } from "@/components/GrannysNote";
+import { getActiveGrannyNotes } from "@/lib/data/granny-notes";
 
 function money(n: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
@@ -44,10 +46,17 @@ export default async function BudgetPage({
   const currency = profile.currency;
   const categoryName = new Map(categories.map((c) => [c.id, c.name]));
 
+  const activeNotes = await getActiveGrannyNotes(userId);
+  const budgetNote = activeNotes.find(
+    (n) => n.tier === "pace_warning" || n.tier === "over_budget"
+  );
+
   return (
     <div>
       <h1 className="font-display text-3xl text-ink mb-2">Budget</h1>
       <div className="gilt-flourish mb-8" />
+
+      {budgetNote && <GrannysNote note={budgetNote} />}
 
       {/* Add transaction */}
       <section className="mb-12">

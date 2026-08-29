@@ -22,6 +22,11 @@ const FAQS: FaqItem[] = [
   { question: "How much do I need to save each month to hit a goal by a date?", href: "/login", tone: "rust" },
   { question: "What happens if I invest €300 a month?", href: "/login", tone: "plum" },
   { question: "What's the fastest way to clear this debt?", href: "/login", tone: "rust" },
+  {
+    question: "How do I avoid getting caught out by annual bills, like car insurance or Christmas?",
+    href: "/login",
+    tone: "sage",
+  },
 ];
 
 const toneStyles = {
