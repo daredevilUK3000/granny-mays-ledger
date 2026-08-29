@@ -78,10 +78,10 @@ export function PricingLedger({
           </ul>
 
           <Link
-            href="/login"
+            href={signedIn ? "/dashboard/overview" : "/login"}
             className="mt-7 block rounded-full border border-rule px-5 py-2.5 text-center text-sm font-medium text-ink transition hover:bg-parchment-dim"
           >
-            Start tracking &mdash; free
+            {signedIn ? "Go to your dashboard" : "Start tracking — free"}
           </Link>
         </div>
 

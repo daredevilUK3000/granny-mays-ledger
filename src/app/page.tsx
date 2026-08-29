@@ -82,10 +82,10 @@ export default async function LandingPage() {
               handing their bank logins to a stranger's server.
             </p>
             <Link
-              href="/login"
+              href={email ? "/dashboard/overview" : "/login"}
               className="tabular inline-flex items-center rounded-full bg-gilt-bright px-7 py-3.5 text-base text-white font-medium hover:brightness-110 hover:scale-105 transition-all shadow-[0_8px_24px_rgba(245,163,0,0.45)]"
             >
-              Start tracking &mdash; free
+              {email ? "Go to your dashboard" : "Start tracking — free"}
             </Link>
           </div>
         </div>
