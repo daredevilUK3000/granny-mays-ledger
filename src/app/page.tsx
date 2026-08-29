@@ -112,12 +112,21 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-2xl px-6 py-10 text-center">
-        <p className="text-ink-soft text-sm sm:text-base leading-relaxed">
-          Automated apps make it easy to lose track of where your money goes.
-          Writing it down yourself keeps you close to your numbers &mdash; most
-          people find they naturally spend less once they can actually see it.
-        </p>
+      <section className="mx-auto max-w-2xl px-6 py-16 text-center">
+        <Reveal>
+          <div className="gilt-flourish mx-auto mb-6" />
+          <p className="font-display text-2xl sm:text-3xl leading-snug text-ink">
+            Automated apps make it easy to lose track of where your money goes.
+          </p>
+          <p className="mt-4 text-ink-soft text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
+            Writing it down yourself keeps you close to your numbers &mdash;{" "}
+            <em className="text-plum not-italic font-medium">
+              most people find they naturally spend less once they can
+              actually see it
+            </em>
+            .
+          </p>
+        </Reveal>
       </section>
 
       <section className="w-full bg-ink-deep py-20">
@@ -187,7 +196,7 @@ export default async function LandingPage() {
             grow.
           </p>
           <Link
-            href="/login"
+            href={email ? "/dashboard/decisions" : "/login"}
             className="tabular mt-6 inline-flex items-center rounded-full border border-plum px-6 py-2.5 text-sm text-plum font-medium hover:bg-plum hover:text-parchment transition-colors"
           >
             Start your journal &mdash; free
