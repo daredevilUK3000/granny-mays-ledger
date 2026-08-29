@@ -154,32 +154,33 @@ export default async function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-24">
-        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-stretch">
-          <Reveal>
-            <LandingFaq />
-          </Reveal>
-          <Reveal delay={120}>
-            <div className="ledger-card flex h-full flex-col items-center justify-center gap-4 px-8 py-10">
-              <Link
-                href="/bookcase"
-                className="group block w-full max-w-md transition-transform hover:-translate-y-1"
-              >
-                <div className="relative aspect-square">
-                  <Image
-                    src="/granny-book-choice.png"
-                    alt="Granny May's Book Choice — an illustrated bookcase of financial literacy books"
-                    fill
-                    sizes="(min-width: 640px) 448px, 384px"
-                    className="object-contain drop-shadow-[0_12px_20px_rgba(28,43,57,0.18)]"
-                  />
-                </div>
-                <p className="mt-1 text-center text-sm text-ink-soft group-hover:text-ink transition-colors">
-                  Browse the shelf &rarr;
-                </p>
-              </Link>
-            </div>
-          </Reveal>
-        </div>
+        <Reveal>
+          <LandingFaq />
+        </Reveal>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pb-24">
+        <Reveal>
+          <div className="ledger-card flex flex-col items-center justify-center gap-4 px-8 py-10">
+            <Link
+              href="/bookcase"
+              className="group block w-full max-w-xs transition-transform hover:-translate-y-1"
+            >
+              <div className="relative aspect-square">
+                <Image
+                  src="/granny-book-choice.png"
+                  alt="Granny May's Book Choice — an illustrated bookcase of financial literacy books"
+                  fill
+                  sizes="384px"
+                  className="object-contain drop-shadow-[0_12px_20px_rgba(28,43,57,0.18)]"
+                />
+              </div>
+              <p className="mt-1 text-center text-sm text-ink-soft group-hover:text-ink transition-colors">
+                Browse the shelf &rarr;
+              </p>
+            </Link>
+          </div>
+        </Reveal>
       </section>
 
       <section className="mx-auto max-w-3xl px-6 py-16 text-center">

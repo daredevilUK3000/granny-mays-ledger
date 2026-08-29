@@ -1,71 +1,137 @@
+import Image from "next/image";
 import Link from "next/link";
 
 /**
- * "What people actually want to know" — landing page FAQ teaser.
- * Redesign goal: give the list actual elevation (it previously sat
- * directly on the parchment background with no card, no depth) while
- * keeping the existing per-question accent colors.
+ * "What people actually want to know" — landing page FAQ, redesigned as
+ * alternating text/image rows (same side-by-side construct as the hero
+ * and Money Corner sections) so each question is paired with a real
+ * screenshot of the app answering it, instead of a plain text list.
  *
- * hrefs point at /login for now — every other CTA on this page does the
- * same, and there's no dedicated feature/anchor destination yet for each
- * question to link to instead.
+ * Screenshots come from public/faq/ — captured from a seeded test account,
+ * cropped to the relevant card only. hrefs point at /login for now, same
+ * as every other CTA on this page.
  */
 
 interface FaqItem {
   question: string;
+  caption: string;
   href: string;
   tone: "sage" | "rust" | "plum";
+  image: string;
+  imgWidth: number;
+  imgHeight: number;
 }
 
 const FAQS: FaqItem[] = [
-  { question: "Where did my money go this month?", href: "/login", tone: "sage" },
-  { question: "How much do I need to save each month to hit a goal by a date?", href: "/login", tone: "rust" },
-  { question: "What happens if I invest €300 a month?", href: "/login", tone: "plum" },
-  { question: "What's the fastest way to clear this debt?", href: "/login", tone: "rust" },
   {
-    question: "How do I avoid getting caught out by annual bills, like car insurance or Christmas?",
+    question: "Where did my money go this month?",
+    caption:
+      "Every expense you log gets sorted into categories automatically, so the answer is always one glance away.",
     href: "/login",
     tone: "sage",
+    image: "/faq/spending.png",
+    imgWidth: 630,
+    imgHeight: 545,
+  },
+  {
+    question: "How much do I need to save each month to hit a goal by a date?",
+    caption:
+      "Set a target amount and a date — Granny works out the required monthly contribution for you.",
+    href: "/login",
+    tone: "rust",
+    image: "/faq/goals.png",
+    imgWidth: 630,
+    imgHeight: 345,
+  },
+  {
+    question: "What happens if I invest €300 a month?",
+    caption:
+      "A standalone what-if calculator. Change any number and the projection updates instantly — nothing is ever committed for real.",
+    href: "/login",
+    tone: "plum",
+    image: "/faq/investments.png",
+    imgWidth: 630,
+    imgHeight: 500,
+  },
+  {
+    question: "What's the fastest way to clear this debt?",
+    caption:
+      "Compare avalanche vs. snowball side by side, and see exactly when you'll be debt-free.",
+    href: "/login",
+    tone: "rust",
+    image: "/faq/debt.png",
+    imgWidth: 630,
+    imgHeight: 400,
+  },
+  {
+    question:
+      "How do I avoid getting caught out by annual bills, like car insurance or Christmas?",
+    caption:
+      "Set up a Sinking Fund and Granny tells you exactly how much to put away each month, so it's never a surprise.",
+    href: "/login",
+    tone: "sage",
+    image: "/faq/sinking-funds.png",
+    imgWidth: 700,
+    imgHeight: 200,
   },
 ];
 
-const toneStyles = {
-  sage: { bg: "bg-sage-soft", text: "text-sage", hoverBg: "hover:bg-sage-soft" },
-  rust: { bg: "bg-rust-soft", text: "text-rust", hoverBg: "hover:bg-rust-soft" },
-  plum: { bg: "bg-plum-soft", text: "text-plum", hoverBg: "hover:bg-plum-soft" },
+const toneText = {
+  sage: "text-sage",
+  rust: "text-rust",
+  plum: "text-plum",
 };
 
 export function LandingFaq() {
   return (
-    <div className="ledger-card px-8 py-9 sm:px-10 sm:py-10">
-      <div className="gilt-flourish mb-5" />
-      <h2 className="font-display text-2xl text-ink sm:text-3xl">
-        What people actually want to know
-      </h2>
-      <p className="tabular mt-2 text-xs uppercase tracking-wide text-ink-soft">
-        Real questions, answered by the app
-      </p>
+    <div>
+      <div className="mx-auto max-w-2xl text-center">
+        <div className="gilt-flourish mx-auto mb-5" />
+        <h2 className="font-display text-2xl text-ink sm:text-3xl">
+          What people actually want to know
+        </h2>
+        <p className="tabular mt-2 text-xs uppercase tracking-wide text-ink-soft">
+          Real questions, answered by the app
+        </p>
+      </div>
 
-      <div className="mt-6">
+      <div className="mt-16 space-y-20">
         {FAQS.map((item, i) => {
-          const tone = toneStyles[item.tone];
+          const imageFirst = i % 2 === 0;
           return (
-            <Link
+            <div
               key={item.question}
-              href={item.href}
-              className={`group flex items-start gap-3.5 rounded-md px-3 py-3.5 transition-colors ${tone.hoverBg} ${
-                i < FAQS.length - 1 ? "border-b border-dashed border-rule" : ""
-              }`}
+              className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16"
             >
-              <span
-                className={`tabular mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${tone.bg} ${tone.text}`}
-              >
-                ?
-              </span>
-              <span className="text-[15px] leading-relaxed text-ink group-hover:text-ink">
-                {item.question}
-              </span>
-            </Link>
+              <div className={imageFirst ? "" : "lg:order-2"}>
+                <div className="ledger-card overflow-hidden p-2">
+                  <Image
+                    src={item.image}
+                    alt={item.question}
+                    width={item.imgWidth}
+                    height={item.imgHeight}
+                    className="h-auto w-full rounded-[3px]"
+                  />
+                </div>
+              </div>
+              <div className={imageFirst ? "" : "lg:order-1"}>
+                <p className={`tabular text-xs uppercase tracking-wide ${toneText[item.tone]}`}>
+                  Real question
+                </p>
+                <h3 className="mt-2 font-display text-2xl leading-snug text-ink">
+                  {item.question}
+                </h3>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
+                  {item.caption}
+                </p>
+                <Link
+                  href={item.href}
+                  className={`mt-5 inline-flex items-center text-sm font-medium ${toneText[item.tone]} hover:underline`}
+                >
+                  See it for yourself &rarr;
+                </Link>
+              </div>
+            </div>
           );
         })}
       </div>
