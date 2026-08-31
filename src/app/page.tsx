@@ -112,20 +112,17 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-2xl px-6 py-16 text-center">
+      <section className="w-full">
         <Reveal>
-          <div className="gilt-flourish mx-auto mb-6" />
-          <p className="font-display text-2xl sm:text-3xl leading-snug text-ink">
-            Automated apps make it easy to lose track of where your money goes.
-          </p>
-          <p className="mt-4 text-ink-soft text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
-            Writing it down yourself keeps you close to your numbers &mdash;{" "}
-            <em className="text-plum not-italic font-medium">
-              most people find they naturally spend less once they can
-              actually see it
-            </em>
-            .
-          </p>
+          <div className="relative w-full aspect-[1746/901]">
+            <Image
+              src="/see-it-write-it-down.png"
+              alt="See it. Write it down. Spend with intention. Automated apps make it easy to lose track of where your money goes — writing it down yourself keeps you close to your numbers, and most people naturally spend less once they can actually see it. Granny May at her writing desk, filling in her household ledger beside a cup of tea."
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
         </Reveal>
       </section>
 
