@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/dashboard/overview",
     name: "Granny May's Ledger",
     short_name: "Granny May's",
     description: "A backward- and forward-looking household ledger.",
