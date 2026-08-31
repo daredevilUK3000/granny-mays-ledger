@@ -30,8 +30,8 @@ const FAQS: FaqItem[] = [
     href: "/login",
     tone: "sage",
     image: "/faq/safe-to-spend.png",
-    imgWidth: 260,
-    imgHeight: 100,
+    imgWidth: 490,
+    imgHeight: 190,
   },
   {
     question: "I don't have time to fill out a whole form for a coffee.",
@@ -40,8 +40,8 @@ const FAQS: FaqItem[] = [
     href: "/login",
     tone: "rust",
     image: "/faq/quick-add.png",
-    imgWidth: 265,
-    imgHeight: 470,
+    imgWidth: 400,
+    imgHeight: 660,
   },
   {
     question: "What happens to the money I don't spend?",
@@ -50,8 +50,8 @@ const FAQS: FaqItem[] = [
     href: "/login",
     tone: "plum",
     image: "/faq/surplus-sweep.png",
-    imgWidth: 610,
-    imgHeight: 100,
+    imgWidth: 762,
+    imgHeight: 262,
   },
   {
     question: "Where did my money go this month?",
