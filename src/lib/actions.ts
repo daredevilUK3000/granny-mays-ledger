@@ -11,6 +11,7 @@ import { getProfile } from "@/lib/data/profile";
 import { getScenarioForDate } from "@/lib/granny-scenarios";
 import { getNewlyCrossedBadge } from "@/lib/badges";
 import { pickUnspentLine } from "@/lib/unspent-lines";
+import { currentMonth } from "@/lib/data/transactions";
 
 // ---------------------------------------------------------------------
 // Categories
@@ -21,15 +22,40 @@ export async function createCategory(formData: FormData) {
 
   const name = String(formData.get("name") ?? "").trim();
   const type = String(formData.get("type") ?? "expense");
+  const spendingTypeRaw = String(formData.get("spending_type") ?? "flexible");
+  const spendingType = spendingTypeRaw === "fixed" ? "fixed" : "flexible";
 
   if (!name) throw new Error("A category name is required.");
 
   const { error } = await supabase
     .from("categories")
-    .insert({ user_id: userId, name, type });
+    .insert({ user_id: userId, name, type, spending_type: spendingType });
 
   if (error) throw error;
   revalidatePath("/dashboard/budget");
+  revalidatePath("/dashboard/categories");
+  revalidatePath("/dashboard/overview");
+}
+
+export async function updateCategorySpendingType(categoryId: string, formData: FormData) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  const spendingTypeRaw = String(formData.get("spending_type") ?? "flexible");
+  const spendingType = spendingTypeRaw === "fixed" ? "fixed" : "flexible";
+
+  // Only a user's own categories can be retyped — a shared default
+  // (user_id null) would change the calculation for every user at once.
+  const { error } = await supabase
+    .from("categories")
+    .update({ spending_type: spendingType })
+    .eq("id", categoryId)
+    .eq("user_id", userId);
+
+  if (error) throw error;
+  revalidatePath("/dashboard/categories");
+  revalidatePath("/dashboard/budget");
+  revalidatePath("/dashboard/overview");
 }
 
 export async function deleteCategory(categoryId: string) {
@@ -70,6 +96,34 @@ export async function createTransaction(formData: FormData) {
     category_id: categoryId,
     tx_date: txDate,
     note,
+  });
+
+  if (error) throw error;
+  revalidatePath("/dashboard/overview");
+  revalidatePath("/dashboard/budget");
+}
+
+/**
+ * Quick-Add: amount + category, saved immediately as today's expense.
+ * Takes plain args (not FormData) so the client screen can call it
+ * directly and reset for the next entry without a full page nav.
+ */
+export async function quickAddTransaction(amount: number, categoryId: string) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  if (!amount || amount <= 0 || !categoryId) {
+    throw new Error("An amount and category are required.");
+  }
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  const { error } = await supabase.from("transactions").insert({
+    user_id: userId,
+    type: "expense",
+    amount,
+    category_id: categoryId,
+    tx_date: todayKey,
   });
 
   if (error) throw error;
@@ -790,6 +844,87 @@ export async function dismissGrannyNote(triggerKey: string) {
   // that a row exists, not that this call is the one that created it.
   if (error && error.code !== "23505") throw error;
 
+  revalidatePath("/dashboard/budget");
+  revalidatePath("/dashboard/goals");
+}
+
+// ---------------------------------------------------------------------
+// Surplus Sweep — a one-time prompt (see granny-notes.ts) for where
+// last month's unspent flexible budget should go. Whatever's chosen
+// creates a real, queryable row; never a silent number reallocation.
+// ---------------------------------------------------------------------
+export async function applySurplusSweep(formData: FormData) {
+  const userId = await requireUserId();
+  const supabase = createAdminClient();
+
+  const triggerKey = String(formData.get("trigger_key") ?? "");
+  const sourceMonth = String(formData.get("source_month") ?? "");
+  const option = String(formData.get("option") ?? "");
+  const amount = Number(formData.get("amount"));
+  const targetId = String(formData.get("target_id") ?? "") || null;
+
+  if (!triggerKey || !sourceMonth || !amount || amount <= 0) {
+    throw new Error("Invalid sweep request.");
+  }
+
+  const note = `Granny's Surplus Sweep — ${sourceMonth}`;
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  if (option === "sinking_fund") {
+    if (!targetId) throw new Error("Choose a sinking fund.");
+    const { data: fund, error: fundError } = await supabase
+      .from("sinking_funds")
+      .select("id")
+      .eq("id", targetId)
+      .eq("user_id", userId)
+      .single();
+    if (fundError || !fund) throw new Error("Sinking fund not found.");
+
+    const { error } = await supabase.from("sinking_fund_contributions").insert({
+      fund_id: targetId,
+      user_id: userId,
+      amount,
+      contrib_date: todayKey,
+      note,
+    });
+    if (error) throw error;
+  } else if (option === "goal") {
+    if (!targetId) throw new Error("Choose a goal.");
+    const { data: goal, error: goalError } = await supabase
+      .from("goals")
+      .select("id")
+      .eq("id", targetId)
+      .eq("user_id", userId)
+      .single();
+    if (goalError || !goal) throw new Error("Goal not found.");
+
+    const { error } = await supabase.from("goal_contributions").insert({
+      goal_id: targetId,
+      user_id: userId,
+      amount,
+      contrib_date: todayKey,
+      note,
+    });
+    if (error) throw error;
+  } else if (option === "carryover") {
+    const { error } = await supabase.from("budget_carryovers").insert({
+      user_id: userId,
+      month: currentMonth(),
+      source_month: sourceMonth,
+      amount,
+      note,
+    });
+    if (error) throw error;
+  } else {
+    throw new Error("Invalid sweep option.");
+  }
+
+  const { error: seenError } = await supabase
+    .from("granny_notes_seen")
+    .insert({ user_id: userId, trigger_key: triggerKey });
+  if (seenError && seenError.code !== "23505") throw seenError;
+
+  revalidatePath("/dashboard/overview");
   revalidatePath("/dashboard/budget");
   revalidatePath("/dashboard/goals");
 }

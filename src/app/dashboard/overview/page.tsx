@@ -9,6 +9,11 @@ import { getScoreBadge, getStreakBadge, getUnspentBadge } from "@/lib/badges";
 import { ShareBadgeButton } from "@/components/ShareBadgeButton";
 import { UnspentTracker } from "@/components/UnspentTracker";
 import { getUnspentWins, sumUnspentWins, unspentWinsThisMonth } from "@/lib/data/decisions";
+import { getSafeToSpendToday } from "@/lib/data/safetospend";
+import { SafeToSpendWidget } from "@/components/SafeToSpendWidget";
+import { getSurplusSweepPrompt } from "@/lib/data/granny-notes";
+import { SurplusSweepNote } from "@/components/SurplusSweepNote";
+import { getSinkingFunds } from "@/lib/data/sinkingfunds";
 
 // Character stats realistically land somewhere around -50..+100 after a
 // handful of days played anonymously — map that range onto a 0-100% bar.
@@ -35,14 +40,23 @@ export default async function OverviewPage({
   const { month: monthParam } = await searchParams;
   const month = monthParam ?? currentMonth();
 
-  const [summary, categories, profile, { goals }, grannyScore, unspentWins] = await Promise.all([
-    getMonthSummary(userId, month),
-    getCategories(userId),
-    getProfile(userId),
-    getGoals(userId, false),
-    getGrannyScore(userId),
-    getUnspentWins(userId),
-  ]);
+  const isCurrentMonth = month === currentMonth();
+
+  const [summary, categories, profile, { goals }, grannyScore, unspentWins, safeToSpend, surplusSweepPrompt] =
+    await Promise.all([
+      getMonthSummary(userId, month),
+      getCategories(userId),
+      getProfile(userId),
+      getGoals(userId, false),
+      getGrannyScore(userId),
+      getUnspentWins(userId),
+      isCurrentMonth ? getSafeToSpendToday(userId) : Promise.resolve(null),
+      isCurrentMonth ? getSurplusSweepPrompt(userId) : Promise.resolve(null),
+    ]);
+
+  const { funds: sinkingFunds } = surplusSweepPrompt
+    ? await getSinkingFunds(userId, profile.plan === "premium")
+    : { funds: [] };
 
   const unspentTotalThisMonth = sumUnspentWins(unspentWinsThisMonth(unspentWins, month));
   const unspentBadge = getUnspentBadge(sumUnspentWins(unspentWins));
@@ -69,6 +83,21 @@ export default async function OverviewPage({
         </div>
       </div>
       <div className="gilt-flourish mb-8" />
+
+      {surplusSweepPrompt && (
+        <SurplusSweepNote
+          prompt={surplusSweepPrompt}
+          sinkingFunds={sinkingFunds.map((f) => ({ id: f.id, name: f.name }))}
+          goals={goals.map((g) => ({ id: g.id, name: g.name }))}
+          currency={profile.currency}
+        />
+      )}
+
+      {safeToSpend && (
+        <div className="max-w-xs mb-8">
+          <SafeToSpendWidget result={safeToSpend} currency={profile.currency} />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
         <div className="ledger-card p-4">

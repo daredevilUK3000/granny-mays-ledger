@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getBudgetPlanForMonth } from "@/lib/data/budget";
 import { getGoals } from "@/lib/data/goals";
 import { currentMonth } from "@/lib/data/transactions";
+import { getFlexibleBudgetAndSpent } from "@/lib/data/safetospend";
 import { pickLine, type NoteTier } from "@/lib/grannys-notes";
 
 export type GrannyNoteInstance = {
@@ -16,6 +17,12 @@ const MILESTONE_THRESHOLDS = [75, 50, 25] as const; // checked highest-first
 function daysInMonth(month: string): number {
   const [y, m] = month.split("-").map(Number);
   return new Date(y, m, 0).getDate();
+}
+
+function shiftMonth(month: string, delta: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
 /**
@@ -104,4 +111,53 @@ export async function getActiveGrannyNotes(userId: string): Promise<GrannyNoteIn
   const seenKeys = new Set((seen ?? []).map((s) => s.trigger_key));
 
   return candidates.filter((c) => !seenKeys.has(c.triggerKey));
+}
+
+export type SurplusSweepPrompt = {
+  triggerKey: string;
+  sourceMonth: string; // 'YYYY-MM' the leftover was left over from
+  leftover: number;
+};
+
+const SURPLUS_SWEEP_MIN_LEFTOVER = 5;
+
+/**
+ * The prior, fully-elapsed month's unspent flexible budget — fires once,
+ * near the end of the current month or in its first few days, both of
+ * which reference the same just-completed "previous month" (see handoff
+ * for the two-window reasoning). Depends on Feature 1's fixed/flexible
+ * split to know what "leftover" even means.
+ */
+export async function getSurplusSweepPrompt(userId: string): Promise<SurplusSweepPrompt | null> {
+  const month = currentMonth();
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  const dim = daysInMonth(month);
+
+  const nearMonthEnd = dayOfMonth >= dim - 1;
+  const earlyNewMonth = dayOfMonth <= 3;
+  if (!nearMonthEnd && !earlyNewMonth) return null;
+
+  const sourceMonth = shiftMonth(month, -1);
+  const triggerKey = `surplus_sweep:${sourceMonth}`;
+
+  const supabase = createAdminClient();
+  const { data: seen, error: seenError } = await supabase
+    .from("granny_notes_seen")
+    .select("trigger_key")
+    .eq("user_id", userId)
+    .eq("trigger_key", triggerKey)
+    .maybeSingle();
+  if (seenError) throw seenError;
+  if (seen) return null;
+
+  const { flexibleBudgetTotal, flexibleSpentSoFar } = await getFlexibleBudgetAndSpent(
+    userId,
+    sourceMonth
+  );
+  const leftover = flexibleBudgetTotal - flexibleSpentSoFar;
+
+  if (leftover <= SURPLUS_SWEEP_MIN_LEFTOVER) return null;
+
+  return { triggerKey, sourceMonth, leftover };
 }

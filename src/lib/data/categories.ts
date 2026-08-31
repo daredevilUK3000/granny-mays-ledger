@@ -4,7 +4,7 @@ export async function getCategories(userId: string) {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("categories")
-    .select("id, user_id, name, type, color")
+    .select("id, user_id, name, type, color, spending_type")
     .or(`user_id.eq.${userId},user_id.is.null`)
     .order("name", { ascending: true });
 
