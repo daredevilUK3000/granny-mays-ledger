@@ -24,6 +24,36 @@ interface FaqItem {
 
 const FAQS: FaqItem[] = [
   {
+    question: "Can I actually afford this before I buy it?",
+    caption:
+      "Safe-to-Spend Today turns your flexible budget into one number — what's left this month, divided by the days remaining. Recalculated live, every time you log something.",
+    href: "/login",
+    tone: "sage",
+    image: "/faq/safe-to-spend.png",
+    imgWidth: 260,
+    imgHeight: 100,
+  },
+  {
+    question: "I don't have time to fill out a whole form for a coffee.",
+    caption:
+      "Add Quick-Add to your home screen — tap an amount, tap a category, done. No login screen, no navigating the dashboard, just a few taps.",
+    href: "/login",
+    tone: "rust",
+    image: "/faq/quick-add.png",
+    imgWidth: 265,
+    imgHeight: 470,
+  },
+  {
+    question: "What happens to the money I don't spend?",
+    caption:
+      "Once a month, Granny asks where last month's leftover flexible budget should go — a sinking fund, a goal, or straight into this month. Wherever it goes, it's a real, traceable entry, never a quiet reset to zero.",
+    href: "/login",
+    tone: "plum",
+    image: "/faq/surplus-sweep.png",
+    imgWidth: 610,
+    imgHeight: 100,
+  },
+  {
     question: "Where did my money go this month?",
     caption:
       "Every expense you log gets sorted into categories automatically, so the answer is always one glance away.",
