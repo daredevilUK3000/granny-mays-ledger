@@ -20,6 +20,10 @@ interface FaqItem {
   image: string;
   imgWidth: number;
   imgHeight: number;
+  /** Caps the card's display width — for a tall, narrow (phone-shaped)
+   * screenshot like Quick-Add, so it reads as a mockup rather than
+   * stretching to the full column width like the wide dashboard cards. */
+  maxWidthClass?: string;
 }
 
 const FAQS: FaqItem[] = [
@@ -42,6 +46,7 @@ const FAQS: FaqItem[] = [
     image: "/faq/quick-add.png",
     imgWidth: 400,
     imgHeight: 660,
+    maxWidthClass: "max-w-[260px] mx-auto",
   },
   {
     question: "What happens to the money I don't spend?",
@@ -134,7 +139,7 @@ export function LandingFaq() {
               className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16"
             >
               <div className={imageFirst ? "" : "lg:order-2"}>
-                <div className="ledger-card overflow-hidden p-2">
+                <div className={`ledger-card overflow-hidden p-2 ${item.maxWidthClass ?? ""}`}>
                   <Image
                     src={item.image}
                     alt={item.question}
